@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Top Secret Dashboard</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ffcc;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 2rem;
+    }
+    .header {
+      border-bottom: 2px solid #00ffcc;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+    .classified {
+      background: #111;
+      border: 2px dashed #00ffcc;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      animation: flicker 1.5s infinite alternate;
+    }
+    @keyframes flicker {
+      from { box-shadow: 0 0 10px #00ffcc; }
+      to { box-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc inset; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🕵️‍♂️ Welcome, Agent CH</h1>
+    <p>Status: <strong>Cleared</strong></p>
+  </div>
 
+  <div class="classified">
+    <h2>CLASSIFIED INTEL</h2>
+    <p>Operation Nightfall is a go.</p>
+    <p>Next briefing: 0400 hours.</p>
+  </div>
+</body>
+</html>
