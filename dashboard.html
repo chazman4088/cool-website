@@ -1,1 +1,97 @@
-hi
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agency Control Panel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background-color: #0b0f15;
+      color: #00ffcc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-transform: uppercase;
+      font-size: 2em;
+      border-bottom: 2px solid #00ffcc;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background-color: #111;
+      border: 1px solid #00ffcc66;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px #00ffcc44;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px #00ffcc88;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #00ffaa;
+    }
+
+    .card p {
+      color: #aaffff;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    a {
+      color: #00ffcc;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome, Agent CH</h1>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Mission Briefings</h2>
+      <p>Review current operations and target profiles. <br><br><a href="#">View Briefs</a></p>
+    </div>
+    <div class="card">
+      <h2>Surveillance Logs</h2>
+      <p>Access intercepted transmissions and activity logs. <br><br><a href="#">Access Logs</a></p>
+    </div>
+    <div class="card">
+      <h2>Agent Directory</h2>
+      <p>View current operative statuses and assignments. <br><br><a href="#">Open Directory</a></p>
+    </div>
+    <div class="card">
+      <h2>Secure Comms</h2>
+      <p>Send encrypted messages to other agents. <br><br><a href="#">Enter Channel</a></p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Agency Terminal v1.0 — Classified Access Only
+  </div>
+</body>
+</html>
