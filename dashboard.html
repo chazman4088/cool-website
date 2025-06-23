@@ -9,37 +9,181 @@
       background-color: #000;
       color: #00ffcc;
       font-family: 'Courier New', Courier, monospace;
-      padding: 2rem;
+      margin: 0;
+      padding: 0;
     }
-    .header {
+
+    header {
+      background-color: #0d0d0d;
+      padding: 1rem;
       border-bottom: 2px solid #00ffcc;
-      padding-bottom: 1rem;
-      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .classified {
-      background: #111;
-      border: 2px dashed #00ffcc;
+
+    .mission-box {
       padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-      animation: flicker 1.5s infinite alternate;
     }
-    @keyframes flicker {
-      from { box-shadow: 0 0 10px #00ffcc; }
-      to { box-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc inset; }
+
+    button {
+      background: #00ffcc;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #00ccb3;
+    }
+
+    .details {
+      margin-top: 1rem;
+      background: #111;
+      padding: 1rem;
+      border: 1px dashed #00ffcc;
+      display: none;
+    }
+
+    .side-menu {
+      position: fixed;
+      left: -300px;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background-color: #111;
+      padding: 1rem;
+      overflow-y: auto;
+      border-right: 2px solid #00ffcc;
+      transition: left 0.3s ease-in-out;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .menu-toggle {
+      background: #00ffcc;
+      color: #000;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .accepted-mission {
+      border: 1px solid #00ffcc;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+    }
+
+    summary {
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🕵️‍♂️ Welcome, Agent CH</h1>
-    <p>Status: <strong>Cleared</strong></p>
+  <header>
+    <h2>🕵️ Agent CH Dashboard</h2>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
+  </header>
+
+  <div class="side-menu" id="sideMenu">
+    <h3>✅ Accepted Missions</h3>
+    <div id="acceptedMissionsList"></div>
   </div>
 
-  <div class="classified">
-    <h2>CLASSIFIED INTEL</h2>
-    <p>Operation Nightfall is a go.</p>
-    <p>Next briefing: 0400 hours.</p>
+  <div class="mission-box" id="missionBox">
+    <!-- Mission offer will be generated here -->
   </div>
+
+  <script>
+    const missions = [
+      "Intercept enemy transmission",
+      "Surveil high-value target",
+      "Extract compromised agent",
+      "Infiltrate secure facility",
+      "Plant tracking device",
+      "Retrieve encrypted data",
+      "Neutralize rogue operative",
+      "Secure secret package",
+    ];
+
+    const missionDetails = [
+      "Location: Classified coordinates",
+      "Timeframe: Within 24 hours",
+      "Contact: Agent X",
+      "Risk Level: High",
+      "Backup: Not available",
+      "Transport: Stealth vehicle",
+      "Objective: Capture, not kill",
+      "Duration: Approx. 3 hours",
+    ];
+
+    const acceptedMissions = [];
+
+    function toggleMenu() {
+      document.getElementById('sideMenu').classList.toggle('open');
+      updateAcceptedMissions();
+    }
+
+    function generateMission() {
+      const mission = missions[Math.floor(Math.random() * missions.length)];
+      const details = Array.from({ length: 3 }, () => missionDetails[Math.floor(Math.random() * missionDetails.length)]);
+      return { mission, details };
+    }
+
+    function showMission() {
+      const { mission, details } = generateMission();
+      const missionBox = document.getElementById("missionBox");
+
+      missionBox.innerHTML = `
+        <h3>🗂 Mission Offer</h3>
+        <p><strong>${mission}</strong></p>
+        <details>
+          <summary>Show Details</summary>
+          <div class="details">${details.map(d => `<p>${d}</p>`).join('')}</div>
+        </details>
+        <button onclick="acceptMission('${mission.replace(/'/g, "\\'")}', ${JSON.stringify(details).replace(/"/g, '&quot;')})">Accept</button>
+        <button onclick="declineMission()">Decline</button>
+      `;
+    }
+
+    function acceptMission(name, details) {
+      acceptedMissions.push({ name, details });
+      document.getElementById('missionBox').innerHTML = `
+        <p>✅ Mission accepted.</p>
+        <button onclick="showMission()">Request Another Mission</button>
+      `;
+    }
+
+    function declineMission() {
+      document.getElementById('missionBox').innerHTML = `
+        <p>❌ Mission declined.</p>
+        <button onclick="showMission()">Request Another Mission</button>
+      `;
+    }
+
+    function updateAcceptedMissions() {
+      const container = document.getElementById("acceptedMissionsList");
+      container.innerHTML = acceptedMissions.length === 0
+        ? "<p>No missions accepted yet.</p>"
+        : acceptedMissions.map(m => `
+            <div class="accepted-mission">
+              <details>
+                <summary>${m.name}</summary>
+                <div class="details">
+                  ${m.details.map(d => `<p>${d}</p>`).join('')}
+                </div>
+              </details>
+            </div>
+          `).join('');
+    }
+
+    // Show first mission on load
+    showMission();
+  </script>
 </body>
 </html>
