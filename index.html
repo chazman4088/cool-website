@@ -3,116 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Secure Terminal Access</title>
+  <title>Agency Login</title>
   <style>
     body {
-      margin: 0;
-      background-color: #0b0f15;
+      background: #0d0d0d;
       color: #00ffcc;
       font-family: 'Courier New', Courier, monospace;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
     }
-
-    h1 {
-      font-size: 2rem;
-      text-transform: uppercase;
-      border-bottom: 2px solid #00ffcc;
-      margin-bottom: 30px;
-    }
-
-    form {
-      background-color: #111;
-      padding: 30px;
+    .login-box {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ffcc;
+      padding: 40px;
       border-radius: 10px;
-      box-shadow: 0 0 10px #00ffcc55;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      min-width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px #00ffcc;
     }
-
-    input[type="text"], input[type="password"] {
-      padding: 10px;
+    input {
       background: #000;
+      border: 1px solid #00ffcc;
       color: #00ffcc;
-      border: 1px solid #00ffcc88;
-      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 16px;
     }
-
-    input[type="submit"] {
+    button {
       background: #00ffcc;
       color: #000;
-      font-weight: bold;
-      padding: 10px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 5px;
+      font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.3s;
     }
-
-    input[type="submit"]:hover {
-      background: #00ffaa;
+    button:hover {
+      background: #00ccb3;
     }
-
-    #message {
-      text-align: center;
-      font-size: 0.95em;
-      margin-top: 10px;
-    }
-
-    .success {
-      color: #00ff88;
-    }
-
-    .error {
-      color: #ff4444;
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-
-  <h1>Agency Login</h1>
-  <form id="loginForm">
-    <input type="text" id="codename" placeholder="Codename" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <input type="submit" value="Enter Secure Terminal" />
-    <div id="message"></div>
-  </form>
+  <div class="login-box">
+    <h2>🔐 Agent Access Terminal</h2>
+    <input type="text" id="codename" placeholder="Codename">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="attemptLogin()">Access</button>
+    <div class="message" id="message"></div>
+  </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbw-ZwzYQ4_ifoECdio7jhnz2ZHOwG-Vnzld1Bi3mswp-w220OTBTyzlAHP8ZmBWBh2C/exec";
+    const endpoint = "https://script.google.com/macros/s/AKfycbztH816NJ1WbYJzWP4MezQAFIVQE4S3FGxjxVSVFT6YisLJ2yJz7LZTjGiVgYN8RFBeIQ/exec";
 
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const codename = document.getElementById("codename").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("message");
+    function attemptLogin() {
+      const codename = document.getElementById('codename').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const messageEl = document.getElementById('message');
 
-      const url = `${scriptURL}?codename=${encodeURIComponent(codename)}&password=${encodeURIComponent(password)}`;
+      if (codename === "CH" && password === "1234") {
+        messageEl.textContent = "Welcome sir";
+        messageEl.style.color = "#00ffcc";
+        logAttempt(codename, "SUCCESS");
+        // Optionally redirect:
+        // setTimeout(() => window.location.href = "dashboard.html", 2000);
+      } else {
+        messageEl.textContent = "Agent not found";
+        messageEl.style.color = "red";
+        logAttempt(codename, "FAILURE");
+      }
+    }
 
-      fetch(url)
-        .then(res => res.text())
-        .then(response => {
-          if (response === "success") {
-            msg.textContent = "Access Granted. Welcome, Agent.";
-            msg.className = "success";
-            setTimeout(() => {
-              window.location.href = "dashboard.html";
-            }, 1500);
-          } else {
-            msg.textContent = "Access Denied. Invalid credentials.";
-            msg.className = "error";
-          }
-        })
-        .catch(err => {
-          msg.textContent = "Connection error. Try again.";
-          msg.className = "error";
-        });
-    });
+    function logAttempt(agent, result) {
+      const url = `${endpoint}?codename=${encodeURIComponent(agent)}&result=${encodeURIComponent(result)}`;
+      const script = document.createElement('script');
+      script.src = url;
+      document.body.appendChild(script);
+    }
   </script>
 </body>
 </html>
