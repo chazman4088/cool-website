@@ -22,6 +22,11 @@
       border-bottom: 2px solid #00ffcc;
       position: relative;
       z-index: 1001;
+      transition: margin-right 0.3s ease;
+    }
+
+    header.shrink {
+      margin-right: 300px; /* same as sidebar width */
     }
 
     .menu-toggle {
@@ -61,7 +66,7 @@
       background: #000;
       border-left: 2px solid #00ffcc;
       padding: 20px;
-      transition: 0.3s ease;
+      transition: right 0.3s ease;
       overflow-y: auto;
       z-index: 1000;
     }
@@ -114,7 +119,7 @@
   </style>
 </head>
 <body>
-  <header>
+  <header id="mainHeader">
     <h2>🕵️ Agent CH Dashboard</h2>
     <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
   </header>
@@ -157,7 +162,10 @@
     const acceptedMissions = [];
 
     function toggleMenu() {
-      document.getElementById('sideMenu').classList.toggle('open');
+      const sideMenu = document.getElementById('sideMenu');
+      const header = document.getElementById('mainHeader');
+      sideMenu.classList.toggle('open');
+      header.classList.toggle('shrink');
       updateAcceptedMissions();
     }
 
@@ -226,9 +234,9 @@
       const overlay = document.getElementById("statusOverlay");
 
       if (status === "Completed") {
-        overlay.textContent = "🎉 Congratulations, agent";
+        overlay.textContent = "Congratulations, agent";
       } else {
-        overlay.textContent = "💥 It's ok, this one was bound to be a flop, agent";
+        overlay.textContent = "It's ok, this one was bound to be a flop, agent";
       }
 
       overlay.style.display = "flex";
