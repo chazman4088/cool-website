@@ -6,17 +6,18 @@
   <title>Agent Dashboard</title>
   <style>
     body { background: #0d0d0d; color: #00ffcc; font-family: monospace; margin: 0; padding: 0; }
-    header { background: #000; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .menu-toggle { background: #00ffcc; color: #000; border: none; padding: 8px 16px; cursor: pointer; }
+    header { background: #000; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;}
+    .menu-toggle { background: #00ffcc; color: #000; border: none; padding: 8px 16px; margin-left: 10px; cursor: pointer; }
     #wallet { font-weight: bold; }
-    .side-menu { position: fixed; top: 0; right: -320px; width: 320px; height: 100%; background: #000; border-left: 2px solid #00ffcc; padding: 20px; transition: right 0.3s ease; overflow-y: auto; z-index: 10; }
+    .side-menu { position: fixed; top: 0; right: -340px; width: 340px; height: 100%; background: #000; border-left:2px solid #00ffcc; padding:20px; transition:right .3s ease; overflow-y:auto; }
     .side-menu.open { right: 0; }
-    .close-btn { background: none; border: none; color: #00ffcc; font-size: 20px; cursor: pointer; float: right; }
-    .section-box { padding: 20px; text-align: center; margin-top: 20px; }
-    button { margin: 10px; background: #00ffcc; color: #000; border: none; padding: 8px 16px; cursor: pointer; }
-    button:hover { background: #00ccb3; }
-    .card { border: 1px solid #00ffcc; margin: 10px auto; padding: 10px; max-width: 400px; background: rgba(0,255,204,0.05); }
-    #statusOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: #00ffcc; display: none; align-items: center; justify-content: center; font-size: 1.5rem; text-align: center; z-index: 9999; }
+    .close-btn { float:right; background:none; border:none; color:#00ffcc; font-size:1.2rem; cursor:pointer; }
+    .section-box { padding:20px; max-width:600px; margin:20px auto; background:rgba(0,255,204,0.05); border:1px solid #00ffcc; }
+    button { background:#00ffcc; color:#000; border:none; padding:8px 16px; margin:10px; cursor:pointer; }
+    button:hover { background:#00ccb3; }
+    .card { padding:10px; border:1px solid #00ffcc; margin:10px 0; }
+    #statusOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); color:#00ffcc; display:none; align-items:center; justify-content:center; font-size:1.2rem; text-align:center; z-index:9999; }
+    input { padding:8px; width:80%; margin:10px 0; }
   </style>
 </head>
 <body>
@@ -25,174 +26,154 @@
     <div>
       <span id="wallet">💰 €100,000</span>
       <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+      <button class="menu-toggle" onclick="showStocks()">📈 Invest in Stocks</button>
+      <button class="menu-toggle" onclick="showMission()">🎯 New Mission</button>
+      <button class="menu-toggle" onclick="showRecruit()">🧑 Hire Recruit</button>
     </div>
   </header>
 
   <div id="menuPanel" class="side-menu">
     <button class="close-btn" onclick="toggleMenu()">×</button>
-    <h3>✅ Missions</h3>
-    <div id="missionsList"></div>
-    <hr>
-    <h3>🧑 Recruits</h3>
-    <div id="recruitsList"></div>
+    <h3>✅ Active Missions</h3><div id="missionsList"></div><hr>
+    <h3>🧑 Hired Recruits</h3><div id="recruitsList"></div>
   </div>
 
-  <div class="section-box" id="missionBox"></div>
-  <div class="section-box" id="recruitBox"></div>
+  <div id="mainContent">
+    <div class="section-box" id="missionBox"></div>
+    <div class="section-box" id="recruitBox"></div>
+    <div class="section-box" id="stockBox"></div>
+  </div>
 
   <div id="statusOverlay"></div>
 
   <script>
-    let wallet = 100000, missions = [], recruits = [], currentMission = null, currentRecruit = null;
+    let wallet = 100000, missions=[], recruits=[], currentMission=null, currentRecruit=null;
 
-    const missionTemplates = [
-      "Intercept enemy transmission", "Surveil high-value target",
-      "Extract compromised agent", "Infiltrate secure facility",
-      "Plant tracking device", "Retrieve encrypted data",
-      "Neutralize rogue operative", "Secure secret package"
+    const missionTemplates=[
+      "Intercept enemy transmission","Surveil high-value target","Extract compromised agent",
+      "Infiltrate secure facility","Plant tracking device","Retrieve encrypted data",
+      "Neutralize rogue operative","Secure secret package"
     ];
+    const stockNames=["ACME Corp","Global Dynamics","Zenith Tech","Nova Energy","Quantum Systems","Helix Pharma"];
 
-    function toggleMenu() {
-      document.getElementById('menuPanel').classList.toggle('open');
+    function updateWallet(){
+      document.getElementById("wallet").textContent=`💰 €${wallet.toLocaleString()}`;
+    }
+
+    function random(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function toggleMenu(){
+      document.getElementById("menuPanel").classList.toggle("open");
       renderLists();
     }
 
-    function updateWallet() {
-      document.getElementById('wallet').textContent = `💰 €${wallet.toLocaleString()}`;
-    }
-
-    function random(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function showMission() {
-      const text = missionTemplates[Math.floor(Math.random() * missionTemplates.length)];
-      const payout = random(50000, 145000);
-      currentMission = { text, details: "Top secret details unavailable.", payout };
-      renderMissionBox();
-    }
-
-    function showRecruit() {
-      const names = ["Shadow", "Viper", "Ghost", "Blaze", "Nova", "Raven", "Hunter"];
-      const locs = ["Berlin", "Tokyo", "NYC", "Paris", "Cairo", "Moscow"];
-      const skills = ["Assassination", "Stealth", "Hacking"];
-      currentRecruit = {
-        name: names[Math.floor(Math.random() * names.length)],
-        age: random(25, 45),
-        location: locs[Math.floor(Math.random() * locs.length)],
-        skill: skills[Math.floor(Math.random() * skills.length)],
-        cost: random(20000, 60000)
+    // —— Missions ——
+    function showMission(){
+      currentMission={ 
+        text: missionTemplates[random(0,missionTemplates.length-1)],
+        details:"Top-secret mission briefing.",
+        payout: random(50000,145000)
       };
-      renderRecruitBox();
+      currentRecruit=null;
+      currentStock=null;
+      renderSections();
     }
-
-    function acceptMission() {
-      missions.push({ ...currentMission });
-      currentMission = null;
-      renderMissionBox();
-      renderLists();
-      showMission();
+    function acceptMission(){
+      missions.push({...currentMission});
+      currentMission=null; renderSections(); renderLists();
     }
-
-    function completeMission(index) {
-      const mission = missions.splice(index, 1)[0];
-      const isMIA = Math.random() < 0.2 && recruits.length > 0;
-      showOverlay(() => {
-        if (isMIA) {
-          const rIndex = random(0, recruits.length - 1);
-          const lost = recruits.splice(rIndex, 1)[0];
-          return `😢 ${lost.name} has been captured. Mission failed.`;
+    function completeMission(i){
+      const m=missions.splice(i,1)[0], isMIA=Math.random()<0.1 && recruits.length>0;
+      showOverlay(()=>{
+        if(isMIA){
+          const rIndex=random(0,recruits.length-1), lost=recruits.splice(rIndex,1)[0];
+          return `😢 ${lost.name} has been captured – mission failed.`;
         } else {
-          wallet += mission.payout;
-          return `✅ Mission complete! You earned €${mission.payout.toLocaleString()}.`;
+          wallet+=m.payout;
+          return `✅ Mission complete! Payout: €${m.payout.toLocaleString()}`;
         }
-      }, () => {
-        updateWallet();
-        renderLists();
-      });
+      },()=>{updateWallet();renderLists()});
+    }
+    function renderLists(){
+      document.getElementById("missionsList").innerHTML=missions.length?missions.map((m,i)=>`
+        <div class="card"><strong>${m.text}</strong><br>
+        Payout: €${m.payout.toLocaleString()}<br>
+        <button onclick="completeMission(${i})">Mark Completed</button></div>`).join(""):`<p>No active missions.</p>`;
+
+      document.getElementById("recruitsList").innerHTML=recruits.length?recruits.map(r=>`
+        <div class="card"><strong>${r.name}</strong><br>${r.skill}, Age ${r.age}<br>${r.location}</div>`).join(""):`<p>No recruits hired.</p>`;
+    }
+    function renderSections(){
+      document.getElementById("missionBox").innerHTML=currentMission?`
+        <div class="card"><h3>${currentMission.text}</h3>
+        <p>${currentMission.details}</p>
+        <p><strong>Payout:</strong> €${currentMission.payout.toLocaleString()}</p>
+        <button onclick="acceptMission()">Accept</button></div>`:"";
+      document.getElementById("recruitBox").innerHTML=currentRecruit?`
+        <div class="card"><h3>${currentRecruit.name}</h3>
+        Age:${currentRecruit.age}, ${currentRecruit.location}<br>
+        Skill: ${currentRecruit.skill}<br>
+        Cost: €${currentRecruit.cost.toLocaleString()}<br>
+        <button onclick="hireRecruit()">Hire</button>
+        <button onclick="showRecruit()">Next Recruit</button></div>`:"";
+      document.getElementById("stockBox").innerHTML=currentStock?`
+        <div class="card"><h3>${currentStock.name}</h3>
+          <p>Invest amount: €<input id="stockAmt" type="number" min="1"/></p>
+          <button onclick="investStock()">Invest</button>
+        </div>`:"";
     }
 
-    function hireRecruit() {
-      if (wallet < currentRecruit.cost) {
-        alert("Not enough funds to hire!");
-        return;
-      }
-      wallet -= currentRecruit.cost;
-      recruits.push({ ...currentRecruit });
-      showOverlay(`🎉 Well done! ${currentRecruit.name} is happy to join.`, () => {
-        updateWallet();
-        renderLists();
-        currentRecruit = null;
-        renderRecruitBox();
+    // —— Recruits ——
+    function showRecruit(){
+      currentRecruit={
+        name: stockNames[random(0,stockNames.length-1)].split(" ")[0]+" Agent",
+        age:random(25,45),
+        location:["Berlin","Tokyo","NYC","Paris","Cairo","Moscow"][random(0,5)],
+        skill:["Assassination","Stealth","Hacking"][random(0,2)],
+        cost:random(20000,60000)
+      };
+      currentMission=null; currentStock=null;
+      renderSections();
+    }
+    function hireRecruit(){
+      if(wallet<currentRecruit.cost) return alert("Insufficient funds!");
+      wallet-=currentRecruit.cost;
+      recruits.push({...currentRecruit});
+      showOverlay(`🎉 Hired ${currentRecruit.name} for €${currentRecruit.cost.toLocaleString()}`,()=>{
+        updateWallet(); renderLists();
+        currentRecruit=null; renderSections();
         showRecruit();
       });
     }
 
-    function renderLists() {
-      const missionsHTML = missions.length ? missions.map((m, i) => `
-        <div class="card">
-          <strong>${m.text}</strong><br>
-          Payout: €${m.payout.toLocaleString()}<br>
-          <button onclick="completeMission(${i})">Mark Completed</button>
-        </div>`).join('') : "<p>No missions yet.</p>";
-      document.getElementById('missionsList').innerHTML = missionsHTML;
-
-      const recruitsHTML = recruits.length ? recruits.map(r => `
-        <div class="card">
-          <strong>${r.name}</strong><br>
-          ${r.skill}, Age ${r.age}<br>${r.location}
-        </div>`).join('') : "<p>No recruits yet.</p>";
-      document.getElementById('recruitsList').innerHTML = recruitsHTML;
+    // —— Stocks ——
+    let currentStock=null;
+    function showStocks(){
+      currentStock={ name: stockNames[random(0,stockNames.length-1)] };
+      currentMission=currentRecruit=null;
+      renderSections();
+    }
+    function investStock(){
+      const amt=Number(document.getElementById("stockAmt").value);
+      if(!amt||amt<1||amt>wallet) return alert("Enter valid amount up to your wallet.");
+      const pct=random(78,200), result=Math.round(amt*pct/100);
+      wallet += (result - amt);
+      showOverlay(()=>{
+        if(pct>100) return `📈 Well done, you got €${result.toLocaleString()} (${pct}%)`;
+        else if(pct===100) return "📊 The market didn’t go anywhere.";
+        else return `📉 Oops… you lost €${(amt - result).toLocaleString()}`;
+      },()=>{ updateWallet(); currentStock=null; renderSections(); });
     }
 
-    function renderMissionBox() {
-      const box = document.getElementById('missionBox');
-      if (currentMission) {
-        box.innerHTML = `
-          <div class="card">
-            <h3>${currentMission.text}</h3>
-            <p>${currentMission.details}</p>
-            <p><strong>Payout:</strong> €${currentMission.payout.toLocaleString()}</p>
-            <button onclick="acceptMission()">Accept Mission</button>
-          </div>`;
-      } else {
-        box.innerHTML = '';
-      }
+    function showOverlay(textOrFn, cb){
+      const o=document.getElementById("statusOverlay");
+      o.textContent = typeof textOrFn==="function" ? textOrFn(): textOrFn;
+      o.style.display="flex";
+      setTimeout(()=>{ o.style.display="none"; cb&&cb(); },3000);
     }
 
-    function renderRecruitBox() {
-      const box = document.getElementById('recruitBox');
-      if (currentRecruit) {
-        box.innerHTML = `
-          <div class="card">
-            <h3>${currentRecruit.name}</h3>
-            Age: ${currentRecruit.age} — Location: ${currentRecruit.location}<br>
-            Skill: ${currentRecruit.skill}<br>
-            <strong>Cost:</strong> €${currentRecruit.cost.toLocaleString()}<br>
-            <button onclick="hireRecruit()">Hire</button>
-            <button onclick="showRecruit()">View Next Recruit</button>
-          </div>`;
-      } else {
-        box.innerHTML = '';
-      }
-    }
-
-    function showOverlay(messageOrFunction, callback = null) {
-      const overlay = document.getElementById('statusOverlay');
-      const text = typeof messageOrFunction === 'function' ? messageOrFunction() : messageOrFunction;
-      overlay.textContent = text;
-      overlay.style.display = 'flex';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-        if (callback) callback();
-      }, 3000);
-    }
-
-    // Initialize
-    updateWallet();
-    renderLists();
-    showMission();
-    showRecruit();
+    // —— Init
+    updateWallet(); renderLists(); showMission();
   </script>
 </body>
 </html>
