@@ -1,178 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Spy Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0a0a0a;
-      color: #00ffcc;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    header {
-      background: #111;
-      padding: 10px;
-      text-align: center;
-      font-size: 24px;
-      border-bottom: 2px solid #00ffcc;
-    }
-
-    .wallet {
-      text-align: center;
-      padding: 10px;
-      font-size: 18px;
-      background-color: #111;
-      border-bottom: 1px solid #00ffcc;
-    }
-
-    .main {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .sidebar {
-      width: 200px;
-      background: #111;
-      border-right: 2px solid #00ffcc;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .content {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-    }
-
-    button {
-      padding: 10px;
-      width: 100%;
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .panel {
-      display: none;
-    }
-
-    .shop-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .shop-tab {
-      padding: 5px 10px;
-      background: #222;
-      color: #00ffcc;
-      border: 1px solid #00ffcc;
-      cursor: pointer;
-    }
-
-    .shop-item {
-      margin: 10px 0;
-      padding: 10px;
-      border: 1px solid #00ffcc;
-    }
-
-    @media (max-width: 768px) {
-      .main {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 5px;
-        border-right: none;
-        border-bottom: 2px solid #00ffcc;
-      }
-
-      .content {
-        padding: 10px;
-      }
-
-      button {
-        width: auto;
-        flex: 1;
-        min-width: 120px;
-      }
-    }
-
-    input[type="number"] {
-      width: 100px;
-      margin: 5px 0;
-    }
-  </style>
-</head>
-<body>
-
-<header>Agent Control Dashboard</header>
-<div class="wallet" id="walletDisplay">Wallet: €0</div>
-
-<div class="main">
-  <div class="sidebar">
-    <button onclick="togglePanel('missionPanel')">Missions</button>
-    <button onclick="togglePanel('recruitPanel')">Recruits</button>
-    <button onclick="togglePanel('stockPanel')">Invest in Stocks</button>
-    <button onclick="togglePanel('shopPanel')">Shop</button>
-  </div>
-
-  <div class="content">
-    <div id="missionPanel" class="panel">
-      <h2>Missions</h2>
-      <div id="missionArea"></div>
-      <button onclick="createAcceptMissionButton()">Request Mission</button>
-      <h3>Accepted Missions</h3>
-      <div id="acceptedMissions"></div>
-    </div>
-
-    <div id="recruitPanel" class="panel">
-      <h2>Recruits</h2>
-      <div id="recruitsArea"></div>
-    </div>
-
-    <div id="stockPanel" class="panel">
-      <h2>Stock Investment</h2>
-      <div id="stockInvestmentArea"></div>
-      <div id="stockMessage"></div>
-      <button onclick="loadStock()">Load New Stock</button>
-    </div>
-
-    <div id="shopPanel" class="panel">
-      <h2>Shop</h2>
-      <div class="shop-tabs">
-        <span class="shop-tab" data-category="cars">Cars</span>
-        <span class="shop-tab" data-category="houses">Houses</span>
-        <span class="shop-tab" data-category="weapons">Weapons</span>
-        <span class="shop-tab" data-category="crypto">Crypto PCs</span>
-      </div>
-      <div id="shopItemsArea"></div>
-      <div id="shopMessage"></div>
-      <div id="cryptoPCInfo"></div>
-    </div>
-  </div>
-</div>
-
 <script>
   let wallet = 100000;
   let recruits = [];
@@ -321,26 +146,54 @@
   const shopItemsArea = document.getElementById('shopItemsArea');
   const shopMessage = document.getElementById('shopMessage');
   let shopItems = { cars: [], houses: [], weapons: [], crypto: [] };
+  let shopTimers = {};
 
   shopTabs.forEach(tab => {
     tab.onclick = () => renderShopItems(tab.dataset.category);
   });
 
-  function generateShopItem(category) {
+  function generateUniqueItems(namesArray, count) {
+    const used = new Set();
+    const items = [];
+    while (items.length < count && used.size < namesArray.length) {
+      const name = namesArray[Math.floor(Math.random() * namesArray.length)];
+      if (!used.has(name)) {
+        used.add(name);
+        items.push(name);
+      }
+    }
+    return items;
+  }
+
+  function generateShopItems(category) {
     let names, range;
     switch (category) {
-      case 'cars': names = ['Spyder GT', 'Phantom Cruiser']; range = [100000, 2000000]; break;
-      case 'houses': names = ['Alpine Chalet', 'Island Villa']; range = [500000, 5000000]; break;
-      case 'weapons': names = ['Laser Rifle', 'EMP Grenade']; range = [10000, 100000]; break;
-      case 'crypto': names = ['Crypto Mining PC']; range = [30000, 30000]; break;
+      case 'cars':
+        names = ['Spyder GT', 'Phantom Cruiser', 'Shadow Drift', 'Stealth Rover', 'Vortex V10'];
+        range = [100000, 2000000];
+        break;
+      case 'houses':
+        names = ['Alpine Chalet', 'Island Villa', 'Subterranean Bunker', 'Skyline Penthouse', 'Coastal Hideout'];
+        range = [500000, 5000000];
+        break;
+      case 'weapons':
+        names = ['Laser Rifle', 'EMP Grenade', 'Plasma Blade', 'Smart Dart Gun', 'Sonic Disruptor'];
+        range = [10000, 100000];
+        break;
+      case 'crypto':
+        return [{ name: 'Crypto Mining PC', price: 30000 }];
     }
-    return { name: names[Math.floor(Math.random() * names.length)], price: randomRange(...range) };
+    return generateUniqueItems(names, 3).map(name => ({
+      name,
+      price: randomRange(...range)
+    }));
   }
 
   function renderShopItems(category) {
     shopMessage.textContent = '';
-    if (shopItems[category].length === 0) {
-      for (let i = 0; i < 3; i++) shopItems[category].push(generateShopItem(category));
+    const now = Date.now();
+    if (shopItems[category].length === 0 && (!shopTimers[category] || now >= shopTimers[category])) {
+      shopItems[category] = generateShopItems(category);
     }
     shopItemsArea.innerHTML = '';
     shopItems[category].forEach((item, i) => {
@@ -362,6 +215,9 @@
     wallet -= item.price;
     if (category === 'crypto') cryptoPCs++;
     shopItems[category].splice(index, 1);
+    if (shopItems[category].length === 0 && category !== 'crypto') {
+      shopTimers[category] = Date.now() + 2 * 60 * 1000;
+    }
     saveState();
     updateWalletDisplay();
     renderShopItems(category);
@@ -389,6 +245,3 @@
   renderAcceptedMissions();
   renderCryptoInfo();
 </script>
-
-</body>
-</html>
