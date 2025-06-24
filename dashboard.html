@@ -48,9 +48,9 @@
 
     const missionTemplates = [
       "Intercept enemy transmission", "Surveil high-value target",
-      "Extract compromised agent",   "Infiltrate secure facility",
-      "Plant tracking device",       "Retrieve encrypted data",
-      "Neutralize rogue operative",  "Secure secret package"
+      "Extract compromised agent", "Infiltrate secure facility",
+      "Plant tracking device", "Retrieve encrypted data",
+      "Neutralize rogue operative", "Secure secret package"
     ];
 
     function toggleMenu() {
@@ -69,46 +69,48 @@
     function showMission() {
       const text = missionTemplates[Math.floor(Math.random() * missionTemplates.length)];
       const details = `Details for "${text}" mission...`;
-      const payout = random(50000,145000);
+      const payout = random(50000, 145000);
       current = { type: "mission", text, details, payout };
       renderBoxes();
     }
 
     function acceptMission() {
       missions.push({ ...current });
-      renderLists();
       current = null;
       renderBoxes();
+      renderLists();
+      showMission(); // Immediately offer a new mission after accepting
     }
 
     function completeMission(idx) {
-      const m = missions.splice(idx,1)[0];
+      const m = missions.splice(idx, 1)[0];
       const isMIA = Math.random() < 0.2 && recruits.length;
       showOverlay(() => {
         if (isMIA) {
-          const rIdx = random(0, recruits.length-1);
-          const r = recruits.splice(rIdx,1)[0];
+          const rIdx = random(0, recruits.length - 1);
+          const r = recruits.splice(rIdx, 1)[0];
           return `😱 ${r.name} was captured. Mission failed.`;
         } else {
           wallet += m.payout;
           return `✅ Mission completed! You earned €${m.payout.toLocaleString()}.`;
         }
       }, () => {
-        updateWallet(); renderLists();
+        updateWallet();
+        renderLists();
       });
     }
 
     function showRecruit() {
-      const names=["Shadow","Viper","Ghost","Blaze","Nova","Raven","Hunter"];
-      const locs=["Berlin","Tokyo","NYC","Paris","Cairo","Moscow"];
-      const skills=["Assassination","Stealth","Hacking"];
+      const names = ["Shadow", "Viper", "Ghost", "Blaze", "Nova", "Raven", "Hunter"];
+      const locs = ["Berlin", "Tokyo", "NYC", "Paris", "Cairo", "Moscow"];
+      const skills = ["Assassination", "Stealth", "Hacking"];
       current = {
         type: "recruit",
-        name: names[Math.floor(Math.random()*names.length)],
-        age: random(25,45),
-        location: locs[Math.floor(Math.random()*locs.length)],
-        skill: skills[Math.floor(Math.random()*skills.length)],
-        cost: random(20000,60000)
+        name: names[Math.floor(Math.random() * names.length)],
+        age: random(25, 45),
+        location: locs[Math.floor(Math.random() * locs.length)],
+        skill: skills[Math.floor(Math.random() * skills.length)],
+        cost: random(20000, 60000)
       };
       renderBoxes();
     }
@@ -118,48 +120,73 @@
       wallet -= current.cost;
       recruits.push({ ...current });
       showOverlay(`👍 Hired ${current.name} for €${current.cost.toLocaleString()}`, () => {
-        updateWallet(); renderLists(); current=null; renderBoxes();
+        updateWallet();
+        renderLists();
+        current = null;
+        renderBoxes();
+        showRecruit(); // Automatically offer next recruit
       });
     }
 
     function renderLists() {
-      let html = missions.length ? missions.map((m,i) => `
+      let html = missions.length ? missions.map((m, i) => `
         <div class="card"><strong>${m.text}</strong><br>Payout: €${m.payout.toLocaleString()}<br>
-        <button onclick="completeMission(${i})">Mark Completed</button></div>`).join('') : '<p>No missions.</p>';
+        <button onclick="completeMission(${i})">Mark Completed</button></div>
+      `).join('') : '<p>No missions.</p>';
       document.getElementById('missionsList').innerHTML = html;
 
       html = recruits.length ? recruits.map(r => `
-        <div class="card"><strong>${r.name}</strong> — ${r.skill}</div>`).join('') : '<p>No recruits.</p>';
+        <div class="card"><strong>${r.name}</strong> — ${r.skill}</div>
+      `).join('') : '<p>No recruits.</p>';
       document.getElementById('recruitsList').innerHTML = html;
     }
 
     function renderBoxes() {
       const mb = document.getElementById('missionBox');
-      mb.innerHTML = current && current.type=="mission" ? `
-        <div class="card"><h3>${current.text}</h3>Payout: €${current.payout.toLocaleString()}<br>
-        ${current.details}<br><button onclick="acceptMission()">Accept Mission</button></div>` : '';
+      if (current && current.type === "mission") {
+        mb.innerHTML = `
+          <div class="card">
+            <h3>${current.text}</h3>
+            Payout: €${current.payout.toLocaleString()}<br>
+            ${current.details}<br>
+            <button onclick="acceptMission()">Accept Mission</button>
+          </div>`;
+      } else {
+        mb.innerHTML = '';
+      }
 
       const rb = document.getElementById('recruitBox');
-      rb.innerHTML = current && current.type=="recruit" ? `
-        <div class="card"><h3>${current.name}</h3>Age: ${current.age}, ${current.location}<br>Skill: ${current.skill}<br>
-        Cost: €${current.cost.toLocaleString()}<br><button onclick="hireRecruit()">Hire</button><button onclick="showRecruit()">Next Recruit</button></div>` : '';
+      if (current && current.type === "recruit") {
+        rb.innerHTML = `
+          <div class="card">
+            <h3>${current.name}</h3>
+            Age: ${current.age}, ${current.location}<br>
+            Skill: ${current.skill}<br>
+            Cost: €${current.cost.toLocaleString()}<br>
+            <button onclick="hireRecruit()">Hire</button>
+            <button onclick="showRecruit()">Next Recruit</button>
+          </div>`;
+      } else {
+        rb.innerHTML = '';
+      }
     }
 
-    function showOverlay(content, cb=null) {
+    function showOverlay(contentOrFn, cb = null) {
       const o = document.getElementById('statusOverlay');
-      o.textContent = content;
+      const text = typeof contentOrFn === 'function' ? contentOrFn() : contentOrFn;
+      o.textContent = text;
       o.style.display = 'flex';
       setTimeout(() => {
         o.style.display = 'none';
         cb && cb();
-      },3000);
+      }, 3000);
     }
 
-    // Initialize
+    // Start
     updateWallet();
     renderLists();
-    showMission();
     showRecruit();
+    showMission();
   </script>
 </body>
 </html>
