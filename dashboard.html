@@ -1,65 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spy Dashboard</title>
-  <style>
-    body { font-family: Arial; background: #111; color: #0f0; padding: 20px; }
-    .menu button { margin-right: 10px; }
-    .panel { display: none; margin-top: 20px; }
-    .shop-tab { margin-right: 10px; cursor: pointer; text-decoration: underline; }
-    .shop-item { margin: 10px 0; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Spy Dashboard</h1>
-  <div id="walletDisplay"></div>
-  <div class="menu">
+  <div id="walletDisplay" class="wallet">Wallet: €100,000</div>
+
+  <nav>
     <button onclick="togglePanel('missionsPanel')">Missions</button>
     <button onclick="togglePanel('recruitsPanel')">Recruits</button>
-    <button onclick="togglePanel('stocksPanel')">Stocks</button>
+    <button onclick="togglePanel('stocksPanel')">Invest</button>
     <button onclick="togglePanel('shopPanel')">Shop</button>
-  </div>
+  </nav>
 
-  <div id="missionsPanel" class="panel">
-    <h2>Mission Center</h2>
+  <div id="missionsPanel" class="panel" style="display:none">
+    <h2>Mission Control</h2>
     <div id="missionArea"></div>
-    <button onclick="createAcceptMissionButton()">Get Mission</button>
+    <button onclick="createAcceptMissionButton()">Request New Mission</button>
     <h3>Accepted Missions</h3>
     <div id="acceptedMissions"></div>
   </div>
 
-  <div id="recruitsPanel" class="panel">
-    <h2>Recruits</h2>
+  <div id="recruitsPanel" class="panel" style="display:none">
+    <h2>Your Recruits</h2>
     <div id="recruitsArea"></div>
   </div>
 
-  <div id="stocksPanel" class="panel">
+  <div id="stocksPanel" class="panel" style="display:none">
     <h2>Invest in Stocks</h2>
+    <button onclick="loadStock()">Load Stock</button>
     <div id="stockInvestmentArea"></div>
     <div id="stockMessage"></div>
-    <button onclick="loadStock()">Get New Stock</button>
   </div>
 
-  <div id="shopPanel" class="panel">
+  <div id="shopPanel" class="panel" style="display:none">
     <h2>Spy Shop</h2>
-    <div>
-      <span class="shop-tab" data-category="cars">Cars</span>
-      <span class="shop-tab" data-category="houses">Houses</span>
-      <span class="shop-tab" data-category="weapons">Weapons</span>
-      <span class="shop-tab" data-category="crypto">Crypto PCs</span>
+    <div class="tabs">
+      <button class="shop-tab" data-category="cars">Cars</button>
+      <button class="shop-tab" data-category="houses">Houses</button>
+      <button class="shop-tab" data-category="weapons">Weapons</button>
+      <button class="shop-tab" data-category="crypto">Crypto PCs</button>
     </div>
     <div id="shopItemsArea"></div>
-    <div id="shopMessage"></div>
-    <div id="cryptoPCInfo" style="margin-top: 15px;"></div>
+    <div id="shopMessage" style="margin-top:10px;color:darkred;"></div>
+    <div id="cryptoPCInfo" style="margin-top:10px;"></div>
   </div>
 
-  <!-- SCRIPT START -->
   <script>
-    let wallet = 100000;
-    let recruits = [];
-    let acceptedMissions = [];
-    let cryptoPCs = 0;
+    let wallet = Number(localStorage.getItem('wallet')) || 100000;
+    let recruits = JSON.parse(localStorage.getItem('recruits') || '[]');
+    let acceptedMissions = JSON.parse(localStorage.getItem('missions') || '[]');
+    let cryptoPCs = Number(localStorage.getItem('cryptoPCs')) || 0;
 
     function formatMoney(num) {
       return '€' + num.toLocaleString();
@@ -76,15 +70,8 @@
       localStorage.setItem('cryptoPCs', cryptoPCs);
     }
 
-    function loadState() {
-      wallet = Number(localStorage.getItem('wallet')) || 100000;
-      recruits = JSON.parse(localStorage.getItem('recruits') || '[]');
-      acceptedMissions = JSON.parse(localStorage.getItem('missions') || '[]');
-      cryptoPCs = Number(localStorage.getItem('cryptoPCs')) || 0;
-    }
-
     function togglePanel(id) {
-      document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
       document.getElementById(id).style.display = 'block';
     }
 
@@ -94,8 +81,7 @@
         location: ['Paris', 'Berlin', 'Tokyo', 'NYC'][Math.floor(Math.random() * 4)],
         payout: randomRange(50000, 145000)
       };
-      const missionArea = document.getElementById('missionArea');
-      missionArea.innerHTML = `
+      document.getElementById('missionArea').innerHTML = `
         <strong>${mission.name}</strong><br/>
         Location: ${mission.location}<br/>
         Payout: ${formatMoney(mission.payout)}<br/>
@@ -238,7 +224,7 @@
           range = [10000, 100000];
           break;
         case 'crypto':
-          return [{ name: 'Crypto Mining PC', price: 30000 }];
+          return cryptoPCs === 0 ? [{ name: 'Crypto Mining PC', price: 30000 }] : [];
       }
       return generateUniqueItems(names, 3).map(name => ({
         name,
@@ -296,12 +282,10 @@
       }
     }, 1000);
 
-    loadState();
     updateWalletDisplay();
     renderRecruits();
     renderAcceptedMissions();
     renderCryptoInfo();
   </script>
-  <!-- SCRIPT END -->
 </body>
 </html>
