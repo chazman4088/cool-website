@@ -11,7 +11,6 @@
       font-family: 'Courier New', Courier, monospace;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
     }
 
     header {
@@ -21,9 +20,6 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #00ffcc;
-      position: relative;
-      z-index: 10;
-      flex-wrap: wrap;
     }
 
     .menu-toggle {
@@ -33,14 +29,11 @@
       padding: 10px;
       font-weight: bold;
       cursor: pointer;
-      margin: 5px;
     }
 
-    .mission-box {
+    .main-content {
       padding: 40px 20px;
       text-align: center;
-      position: relative;
-      z-index: 1;
     }
 
     button {
@@ -66,9 +59,9 @@
       background: #000;
       border-left: 2px solid #00ffcc;
       padding: 20px;
-      transition: right 0.3s ease;
+      transition: 0.3s ease;
       overflow-y: auto;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .side-menu.open {
@@ -85,7 +78,7 @@
       margin-bottom: 10px;
     }
 
-    .accepted-mission {
+    .accepted-mission, .hired-agent {
       border: 1px solid #00ffcc;
       padding: 10px;
       margin-bottom: 10px;
@@ -114,33 +107,36 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      z-index: 999;
+      z-index: 2000;
+    }
+
+    #recruitContainer {
+      margin-top: 30px;
+      border-top: 1px solid #00ffcc;
+      padding-top: 20px;
     }
   </style>
 </head>
 <body>
   <header>
     <h2>🕵️ Agent CH Dashboard</h2>
-    <div>
-      <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
-      <button class="menu-toggle" onclick="toggleRecruitPanel()">➕ Hire Team</button>
-    </div>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
   </header>
 
   <div class="side-menu" id="sideMenu">
     <button class="close-btn" onclick="toggleMenu()">←</button>
     <h3>✅ Accepted Missions</h3>
     <div id="acceptedMissionsList"></div>
+    <h3>🧑‍💻 Hired Team</h3>
+    <div id="hiredAgentsList"></div>
   </div>
 
-  <div class="side-menu" id="recruitPanel">
-    <button class="close-btn" onclick="toggleRecruitPanel()">←</button>
-    <h3>👥 Hire a New Recruit</h3>
-    <div id="recruitInfo"></div>
-  </div>
+  <div class="main-content">
+    <div id="missionBox"></div>
+    <button onclick="showMission()">🎯 Request Another Mission</button>
+    <button onclick="showRecruit()">👥 Hire Team</button>
 
-  <div class="mission-box" id="missionBox">
-    <!-- Mission offer will appear here -->
+    <div id="recruitContainer"></div>
   </div>
 
   <div id="statusOverlay"></div>
@@ -168,30 +164,27 @@
       "Duration: Approx. 3 hours"
     ];
 
-    const acceptedMissions = [];
+    let acceptedMissions = [];
+    let hiredAgents = [];
 
-    function toggleMenu() {
-      const sideMenu = document.getElementById('sideMenu');
-      const recruitPanel = document.getElementById('recruitPanel');
-      const isOpen = sideMenu.classList.contains('open');
-
-      sideMenu.classList.toggle('open');
-      if (!isOpen) {
-        recruitPanel.classList.remove('open');
-        updateAcceptedMissions();
-      }
+    // Load saved data from localStorage
+    function loadData() {
+      const missionsData = localStorage.getItem("acceptedMissions");
+      const agentsData = localStorage.getItem("hiredAgents");
+      if (missionsData) acceptedMissions = JSON.parse(missionsData);
+      if (agentsData) hiredAgents = JSON.parse(agentsData);
     }
 
-    function toggleRecruitPanel() {
-      const recruitPanel = document.getElementById('recruitPanel');
-      const sideMenu = document.getElementById('sideMenu');
-      const isOpen = recruitPanel.classList.contains('open');
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem("acceptedMissions", JSON.stringify(acceptedMissions));
+      localStorage.setItem("hiredAgents", JSON.stringify(hiredAgents));
+    }
 
-      recruitPanel.classList.toggle('open');
-      if (!isOpen) {
-        sideMenu.classList.remove('open');
-        generateRecruit();
-      }
+    function toggleMenu() {
+      document.getElementById('sideMenu').classList.toggle('open');
+      updateAcceptedMissions();
+      updateHiredAgents();
     }
 
     function generateMission() {
@@ -220,17 +213,12 @@
 
     function acceptMission(name, details) {
       acceptedMissions.push({ name, details, status: "Mission accepted" });
-      document.getElementById('missionBox').innerHTML = `
-        <p>✅ Mission accepted.</p>
-        <button onclick="showMission()">Request Another Mission</button>
-      `;
+      saveData();
+      document.getElementById('missionBox').innerHTML = `<p>✅ Mission accepted.</p>`;
     }
 
     function declineMission() {
-      document.getElementById('missionBox').innerHTML = `
-        <p>❌ Mission declined.</p>
-        <button onclick="showMission()">Request Another Mission</button>
-      `;
+      document.getElementById('missionBox').innerHTML = `<p>❌ Mission declined.</p>`;
     }
 
     function updateAcceptedMissions() {
@@ -257,53 +245,79 @@
 
     function markStatus(index, status) {
       const overlay = document.getElementById("statusOverlay");
-
-      if (status === "Completed") {
-        overlay.textContent = "🎉 Congratulations, agent";
-      } else {
-        overlay.textContent = "💥 It's ok, this one was bound to be a flop, agent";
-      }
+      overlay.textContent = status === "Completed" ?
+        "🎉 Congratulations, agent" :
+        "💥 It's ok, this one was bound to be a flop, agent";
 
       overlay.style.display = "flex";
 
       setTimeout(() => {
         overlay.style.display = "none";
         acceptedMissions.splice(index, 1);
+        saveData();
         updateAcceptedMissions();
       }, 3000);
     }
 
-    // Recruit logic
-    const names = ["Shadow Fox", "Ghostblade", "Night Viper", "Zero", "Cipher", "Lynx", "Specter", "Nova"];
-    const locations = ["Berlin", "London", "Moscow", "Tokyo", "New York", "Reykjavik", "Seoul", "Istanbul"];
-    const expertiseOptions = ["Assassination", "Stealth", "Hacking"];
-
     function generateRecruit() {
-      const name = names[Math.floor(Math.random() * names.length)];
-      const age = Math.floor(Math.random() * 20) + 25;
-      const location = locations[Math.floor(Math.random() * locations.length)];
-      const expertise = expertiseOptions[Math.floor(Math.random() * expertiseOptions.length)];
+      const names = ["Shadow", "Ghost", "Blaze", "Viper", "Nova", "Wraith", "Echo"];
+      const locations = ["London", "Berlin", "Tokyo", "Paris", "New York", "Dubai", "Moscow"];
+      const expertise = ["Assassination", "Stealth", "Hacking"];
 
-      const recruitInfo = document.getElementById("recruitInfo");
-      recruitInfo.innerHTML = `
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Age:</strong> ${age}</p>
-        <p><strong>Current Location:</strong> ${location}</p>
-        <p><strong>Expertise:</strong> ${expertise}</p>
-        <button onclick="hireRecruit('${name}')">Hire</button>
-        <button onclick="generateRecruit()">View Next Recruit</button>
+      return {
+        name: names[Math.floor(Math.random() * names.length)],
+        age: Math.floor(Math.random() * 20) + 25,
+        location: locations[Math.floor(Math.random() * locations.length)],
+        skill: expertise[Math.floor(Math.random() * expertise.length)]
+      };
+    }
+
+    let currentRecruit = null;
+
+    function showRecruit() {
+      currentRecruit = generateRecruit();
+      const container = document.getElementById("recruitContainer");
+      container.innerHTML = `
+        <h3>🔍 Recruit Profile</h3>
+        <p><strong>Name:</strong> ${currentRecruit.name}</p>
+        <p><strong>Age:</strong> ${currentRecruit.age}</p>
+        <p><strong>Current Location:</strong> ${currentRecruit.location}</p>
+        <p><strong>Expertise:</strong> ${currentRecruit.skill}</p>
+        <button onclick="hireRecruit()">Hire</button>
+        <button onclick="showRecruit()">View Next Recruit</button>
       `;
     }
 
-    function hireRecruit(name) {
-      const recruitInfo = document.getElementById("recruitInfo");
-      recruitInfo.innerHTML = `<p>✅ Well done, <strong>${name}</strong> is happy to join.</p>`;
+    function hireRecruit() {
+      hiredAgents.push(currentRecruit);
+      saveData();
+
+      const container = document.getElementById("recruitContainer");
+      container.innerHTML = `<p>✅ Well done, ${currentRecruit.name} is happy to join.</p>`;
       setTimeout(() => {
-        toggleRecruitPanel();
+        container.innerHTML = "";
       }, 3000);
     }
 
-    // Load initial mission
+    function updateHiredAgents() {
+      const container = document.getElementById("hiredAgentsList");
+      if (hiredAgents.length === 0) {
+        container.innerHTML = "<p>No agents hired yet.</p>";
+        return;
+      }
+
+      container.innerHTML = hiredAgents.map(agent => `
+        <div class="hired-agent">
+          <p><strong>${agent.name}</strong> – ${agent.skill}</p>
+          <p>Age: ${agent.age}</p>
+          <p>Location: ${agent.location}</p>
+        </div>
+      `).join('');
+    }
+
+    loadData();
+    updateAcceptedMissions();
+    updateHiredAgents();
     showMission();
   </script>
 </body>
