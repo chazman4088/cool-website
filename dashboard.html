@@ -1,291 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Spy Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0a0a0a;
+      color: #00ffcc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #111;
+      padding: 10px;
+      text-align: center;
+      font-size: 24px;
+      border-bottom: 2px solid #00ffcc;
+    }
+
+    .wallet {
+      text-align: center;
+      padding: 10px;
+      font-size: 18px;
+      background-color: #111;
+      border-bottom: 1px solid #00ffcc;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #111;
+      border-right: 2px solid #00ffcc;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .content {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    button {
+      padding: 10px;
+      width: 100%;
+      background: #00ffcc;
+      color: #000;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .shop-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .shop-tab {
+      padding: 5px 10px;
+      background: #222;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      cursor: pointer;
+    }
+
+    .shop-item {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #00ffcc;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        border-right: none;
+        border-bottom: 2px solid #00ffcc;
+      }
+
+      .content {
+        padding: 10px;
+      }
+
+      button {
+        width: auto;
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    input[type="number"] {
+      width: 100px;
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-  <div id="walletDisplay" class="wallet">Wallet: €100,000</div>
 
-  <nav>
-    <button onclick="togglePanel('missionsPanel')">Missions</button>
-    <button onclick="togglePanel('recruitsPanel')">Recruits</button>
-    <button onclick="togglePanel('stocksPanel')">Invest</button>
+<header>Agent Control Dashboard</header>
+<div class="wallet" id="walletDisplay">Wallet: €0</div>
+
+<div class="main">
+  <div class="sidebar">
+    <button onclick="togglePanel('missionPanel')">Missions</button>
+    <button onclick="togglePanel('recruitPanel')">Recruits</button>
+    <button onclick="togglePanel('stockPanel')">Invest in Stocks</button>
     <button onclick="togglePanel('shopPanel')">Shop</button>
-  </nav>
-
-  <div id="missionsPanel" class="panel" style="display:none">
-    <h2>Mission Control</h2>
-    <div id="missionArea"></div>
-    <button onclick="createAcceptMissionButton()">Request New Mission</button>
-    <h3>Accepted Missions</h3>
-    <div id="acceptedMissions"></div>
   </div>
 
-  <div id="recruitsPanel" class="panel" style="display:none">
-    <h2>Your Recruits</h2>
-    <div id="recruitsArea"></div>
-  </div>
-
-  <div id="stocksPanel" class="panel" style="display:none">
-    <h2>Invest in Stocks</h2>
-    <button onclick="loadStock()">Load Stock</button>
-    <div id="stockInvestmentArea"></div>
-    <div id="stockMessage"></div>
-  </div>
-
-  <div id="shopPanel" class="panel" style="display:none">
-    <h2>Spy Shop</h2>
-    <div class="tabs">
-      <button class="shop-tab" data-category="cars">Cars</button>
-      <button class="shop-tab" data-category="houses">Houses</button>
-      <button class="shop-tab" data-category="weapons">Weapons</button>
-      <button class="shop-tab" data-category="crypto">Crypto PCs</button>
+  <div class="content">
+    <div id="missionPanel" class="panel">
+      <h2>Missions</h2>
+      <div id="missionArea"></div>
+      <button onclick="createAcceptMissionButton()">Request Mission</button>
+      <h3>Accepted Missions</h3>
+      <div id="acceptedMissions"></div>
     </div>
-    <div id="shopItemsArea"></div>
-    <div id="shopMessage" style="margin-top:10px;color:darkred;"></div>
-    <div id="cryptoPCInfo" style="margin-top:10px;"></div>
+
+    <div id="recruitPanel" class="panel">
+      <h2>Recruits</h2>
+      <div id="recruitsArea"></div>
+    </div>
+
+    <div id="stockPanel" class="panel">
+      <h2>Stock Investment</h2>
+      <div id="stockInvestmentArea"></div>
+      <div id="stockMessage"></div>
+      <button onclick="loadStock()">Load New Stock</button>
+    </div>
+
+    <div id="shopPanel" class="panel">
+      <h2>Shop</h2>
+      <div class="shop-tabs">
+        <span class="shop-tab" data-category="cars">Cars</span>
+        <span class="shop-tab" data-category="houses">Houses</span>
+        <span class="shop-tab" data-category="weapons">Weapons</span>
+        <span class="shop-tab" data-category="crypto">Crypto PCs</span>
+      </div>
+      <div id="shopItemsArea"></div>
+      <div id="shopMessage"></div>
+      <div id="cryptoPCInfo"></div>
+    </div>
   </div>
+</div>
 
-  <script>
-    let wallet = Number(localStorage.getItem('wallet')) || 100000;
-    let recruits = JSON.parse(localStorage.getItem('recruits') || '[]');
-    let acceptedMissions = JSON.parse(localStorage.getItem('missions') || '[]');
-    let cryptoPCs = Number(localStorage.getItem('cryptoPCs')) || 0;
+<script>
+  let wallet = 100000;
+  let recruits = [];
+  let acceptedMissions = [];
+  let cryptoPCs = 0;
 
-    function formatMoney(num) {
-      return '€' + num.toLocaleString();
-    }
+  function formatMoney(num) {
+    return '€' + num.toLocaleString();
+  }
 
-    function updateWalletDisplay() {
-      document.getElementById('walletDisplay').textContent = `Wallet: ${formatMoney(wallet)}`;
-    }
+  function updateWalletDisplay() {
+    document.getElementById('walletDisplay').textContent = Wallet: ${formatMoney(wallet)};
+  }
 
-    function saveState() {
-      localStorage.setItem('wallet', wallet);
-      localStorage.setItem('recruits', JSON.stringify(recruits));
-      localStorage.setItem('missions', JSON.stringify(acceptedMissions));
-      localStorage.setItem('cryptoPCs', cryptoPCs);
-    }
+  function saveState() {
+    localStorage.setItem('wallet', wallet);
+    localStorage.setItem('recruits', JSON.stringify(recruits));
+    localStorage.setItem('missions', JSON.stringify(acceptedMissions));
+    localStorage.setItem('cryptoPCs', cryptoPCs);
+  }
 
-    function togglePanel(id) {
-      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
-    }
+  function loadState() {
+    wallet = Number(localStorage.getItem('wallet')) || 100000;
+    recruits = JSON.parse(localStorage.getItem('recruits') || '[]');
+    acceptedMissions = JSON.parse(localStorage.getItem('missions') || '[]');
+    cryptoPCs = Number(localStorage.getItem('cryptoPCs')) || 0;
+  }
 
-    function createAcceptMissionButton() {
-      const mission = {
-        name: 'Operation ' + Math.random().toString(36).substring(7).toUpperCase(),
-        location: ['Paris', 'Berlin', 'Tokyo', 'NYC'][Math.floor(Math.random() * 4)],
-        payout: randomRange(50000, 145000)
-      };
-      document.getElementById('missionArea').innerHTML = `
-        <strong>${mission.name}</strong><br/>
-        Location: ${mission.location}<br/>
-        Payout: ${formatMoney(mission.payout)}<br/>
-        <button onclick='acceptMission(${JSON.stringify(JSON.stringify(mission))})'>Accept</button>
-      `;
-    }
+  function togglePanel(id) {
+    document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+  }
 
-    function acceptMission(json) {
-      const mission = JSON.parse(JSON.parse(json));
-      acceptedMissions.push(mission);
-      saveState();
-      renderAcceptedMissions();
-      document.getElementById('missionArea').innerHTML = 'Mission accepted.';
-    }
+  function createAcceptMissionButton() {
+    const mission = {
+      name: 'Operation ' + Math.random().toString(36).substring(7).toUpperCase(),
+      location: ['Paris', 'Berlin', 'Tokyo', 'NYC'][Math.floor(Math.random() * 4)],
+      payout: randomRange(50000, 145000)
+    };
+    const missionArea = document.getElementById('missionArea');
+    missionArea.innerHTML = 
+      <strong>${mission.name}</strong><br/>
+      Location: ${mission.location}<br/>
+      Payout: ${formatMoney(mission.payout)}<br/>
+      <button onclick='acceptMission(${JSON.stringify(JSON.stringify(mission))})'>Accept</button>
+    ;
+  }
 
-    function renderAcceptedMissions() {
-      const area = document.getElementById('acceptedMissions');
-      area.innerHTML = '';
-      acceptedMissions.forEach((m, i) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${m.name}</strong> (${m.location}) – ${formatMoney(m.payout)} 
-          <button onclick="completeMission(${i})">Complete</button>`;
-        area.appendChild(div);
-      });
-    }
+  function acceptMission(json) {
+    const mission = JSON.parse(JSON.parse(json));
+    acceptedMissions.push(mission);
+    saveState();
+    renderAcceptedMissions();
+    document.getElementById('missionArea').innerHTML = 'Mission accepted.';
+  }
 
-    function completeMission(index) {
-      const mission = acceptedMissions[index];
-      const recruitLost = Math.random() < 0.1;
-      if (recruitLost && recruits.length > 0) {
-        const lost = recruits.splice(Math.floor(Math.random() * recruits.length), 1)[0];
-        alert(`Mission failed. Recruit ${lost.name} went MIA.`);
-      } else {
-        wallet += mission.payout;
-        alert(`Mission complete. Earned ${formatMoney(mission.payout)}.`);
-      }
-      acceptedMissions.splice(index, 1);
-      saveState();
-      updateWalletDisplay();
-      renderAcceptedMissions();
-      renderRecruits();
-    }
-
-    function renderRecruits() {
-      const area = document.getElementById('recruitsArea');
-      area.innerHTML = `<button onclick="hireRecruit()">Hire Recruit</button><br/><br/>`;
-      recruits.forEach(r => {
-        area.innerHTML += `<div><strong>${r.name}</strong> – Cost: ${formatMoney(r.cost)}</div>`;
-      });
-    }
-
-    function hireRecruit() {
-      const cost = randomRange(20000, 60000);
-      if (wallet < cost) {
-        alert('Insufficient funds.');
-        return;
-      }
-      wallet -= cost;
-      const name = 'Recruit ' + Math.random().toString(36).substring(7).toUpperCase();
-      recruits.push({ name, cost });
-      saveState();
-      updateWalletDisplay();
-      renderRecruits();
-    }
-
-    function randomRange(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function generateStock() {
-      const names = ['EagleTech', 'Spyronix', 'Cryptoguard', 'ShadowBank', 'BlackLight Ltd'];
-      const name = names[Math.floor(Math.random() * names.length)];
-      const price = randomRange(1000, 10000);
-      return { name, price };
-    }
-
-    function loadStock() {
-      const stock = generateStock();
-      document.getElementById('stockMessage').textContent = '';
-      document.getElementById('stockInvestmentArea').innerHTML = `
-        <strong>Stock:</strong> ${stock.name}<br/>
-        <strong>Price:</strong> ${formatMoney(stock.price)}<br/>
-        <label>Investment: €</label>
-        <input id="stockAmount" type="number" value="1000" min="1"/><br/>
-        <button onclick="investStock(${stock.price})">Invest</button>
-      `;
-    }
-
-    function investStock(price) {
-      const amt = Number(document.getElementById('stockAmount').value);
-      const msg = document.getElementById('stockMessage');
-      if (isNaN(amt) || amt <= 0) return msg.textContent = 'Invalid amount.';
-      if (amt > wallet) return msg.textContent = 'Not enough funds.';
-      wallet -= amt;
-      const percentage = randomRange(78, 200);
-      const returned = Math.floor(amt * (percentage / 100));
-      wallet += returned;
-      const result = returned > amt ? 'GAIN' : returned < amt ? 'LOSS' : 'BREAKEVEN';
-      msg.textContent = `Investment result: ${result}. Wallet now: ${formatMoney(wallet)}.`;
-      updateWalletDisplay();
-      saveState();
-    }
-
-    const shopTabs = document.querySelectorAll('.shop-tab');
-    const shopItemsArea = document.getElementById('shopItemsArea');
-    const shopMessage = document.getElementById('shopMessage');
-    let shopItems = { cars: [], houses: [], weapons: [], crypto: [] };
-    let shopTimers = {};
-
-    shopTabs.forEach(tab => {
-      tab.onclick = () => renderShopItems(tab.dataset.category);
+  function renderAcceptedMissions() {
+    const area = document.getElementById('acceptedMissions');
+    area.innerHTML = '';
+    acceptedMissions.forEach((m, i) => {
+      const div = document.createElement('div');
+      div.innerHTML = <strong>${m.name}</strong> (${m.location}) – ${formatMoney(m.payout)} 
+        <button onclick="completeMission(${i})">Complete</button>;
+      area.appendChild(div);
     });
+  }
 
-    function generateUniqueItems(namesArray, count) {
-      const used = new Set();
-      const items = [];
-      while (items.length < count && used.size < namesArray.length) {
-        const name = namesArray[Math.floor(Math.random() * namesArray.length)];
-        if (!used.has(name)) {
-          used.add(name);
-          items.push(name);
-        }
-      }
-      return items;
+  function completeMission(index) {
+    const mission = acceptedMissions[index];
+    const recruitLost = Math.random() < 0.1;
+    if (recruitLost && recruits.length > 0) {
+      const lost = recruits.splice(Math.floor(Math.random() * recruits.length), 1)[0];
+      alert(Mission failed. Recruit ${lost.name} went MIA.);
+    } else {
+      wallet += mission.payout;
+      alert(Mission complete. Earned ${formatMoney(mission.payout)}.);
     }
+    acceptedMissions.splice(index, 1);
+    saveState();
+    updateWalletDisplay();
+    renderAcceptedMissions();
+    renderRecruits();
+  }
 
-    function generateShopItems(category) {
-      let names, range;
-      switch (category) {
-        case 'cars':
-          names = ['Spyder GT', 'Phantom Cruiser', 'Shadow Drift', 'Stealth Rover', 'Vortex V10'];
-          range = [100000, 2000000];
-          break;
-        case 'houses':
-          names = ['Alpine Chalet', 'Island Villa', 'Subterranean Bunker', 'Skyline Penthouse', 'Coastal Hideout'];
-          range = [500000, 5000000];
-          break;
-        case 'weapons':
-          names = ['Laser Rifle', 'EMP Grenade', 'Plasma Blade', 'Smart Dart Gun', 'Sonic Disruptor'];
-          range = [10000, 100000];
-          break;
-        case 'crypto':
-          return cryptoPCs === 0 ? [{ name: 'Crypto Mining PC', price: 30000 }] : [];
-      }
-      return generateUniqueItems(names, 3).map(name => ({
-        name,
-        price: randomRange(...range)
-      }));
+  function renderRecruits() {
+    const area = document.getElementById('recruitsArea');
+    area.innerHTML = <button onclick="hireRecruit()">Hire Recruit</button><br/><br/>;
+    recruits.forEach(r => {
+      area.innerHTML += <div><strong>${r.name}</strong> – Cost: ${formatMoney(r.cost)}</div>;
+    });
+  }
+
+  function hireRecruit() {
+    const cost = randomRange(20000, 60000);
+    if (wallet < cost) {
+      alert('Insufficient funds.');
+      return;
     }
-
-    function renderShopItems(category) {
-      shopMessage.textContent = '';
-      const now = Date.now();
-      if (shopItems[category].length === 0 && (!shopTimers[category] || now >= shopTimers[category])) {
-        shopItems[category] = generateShopItems(category);
-      }
-      shopItemsArea.innerHTML = '';
-      shopItems[category].forEach((item, i) => {
-        const div = document.createElement('div');
-        div.className = 'shop-item';
-        div.innerHTML = `<strong>${item.name}</strong><br/>Price: ${formatMoney(item.price)}<br/>
-          <button onclick="buyItem('${category}', ${i})">Buy</button>`;
-        shopItemsArea.appendChild(div);
-      });
-      renderCryptoInfo();
-    }
-
-    function buyItem(category, index) {
-      const item = shopItems[category][index];
-      if (wallet < item.price) {
-        shopMessage.textContent = 'Insufficient funds.';
-        return;
-      }
-      wallet -= item.price;
-      if (category === 'crypto') cryptoPCs++;
-      shopItems[category].splice(index, 1);
-      if (shopItems[category].length === 0 && category !== 'crypto') {
-        shopTimers[category] = Date.now() + 2 * 60 * 1000;
-      }
-      saveState();
-      updateWalletDisplay();
-      renderShopItems(category);
-      renderCryptoInfo();
-    }
-
-    function renderCryptoInfo() {
-      document.getElementById('cryptoPCInfo').innerHTML = `
-        <strong>Crypto PCs:</strong> ${cryptoPCs}<br/>
-        Earnings: ${formatMoney(cryptoPCs * 1000)} / sec
-      `;
-    }
-
-    setInterval(() => {
-      if (cryptoPCs > 0) {
-        wallet += cryptoPCs * 1000;
-        updateWalletDisplay();
-        saveState();
-      }
-    }, 1000);
-
+    wallet -= cost;
+    const name = 'Recruit ' + Math.random().toString(36).substring(7).toUpperCase();
+    recruits.push({ name, cost });
+    saveState();
     updateWalletDisplay();
     renderRecruits();
-    renderAcceptedMissions();
+  }
+
+  function randomRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generateStock() {
+    const names = ['EagleTech', 'Spyronix', 'Cryptoguard', 'ShadowBank', 'BlackLight Ltd'];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const price = randomRange(1000, 10000);
+    return { name, price };
+  }
+
+  function loadStock() {
+    const stock = generateStock();
+    document.getElementById('stockMessage').textContent = '';
+    document.getElementById('stockInvestmentArea').innerHTML = 
+      <strong>Stock:</strong> ${stock.name}<br/>
+      <strong>Price:</strong> ${formatMoney(stock.price)}<br/>
+      <label>Investment: €</label>
+      <input id="stockAmount" type="number" value="1000" min="1"/><br/>
+      <button onclick="investStock(${stock.price})">Invest</button>
+    ;
+  }
+
+  function investStock(price) {
+    const amt = Number(document.getElementById('stockAmount').value);
+    const msg = document.getElementById('stockMessage');
+    if (isNaN(amt) || amt <= 0) return msg.textContent = 'Invalid amount.';
+    if (amt > wallet) return msg.textContent = 'Not enough funds.';
+    wallet -= amt;
+    const percentage = randomRange(78, 200);
+    const returned = Math.floor(amt * (percentage / 100));
+    wallet += returned;
+    const result = returned > amt ? 'GAIN' : returned < amt ? 'LOSS' : 'BREAKEVEN';
+    msg.textContent = Investment result: ${result}. Wallet now: ${formatMoney(wallet)}.;
+    updateWalletDisplay();
+    saveState();
+  }
+
+  const shopTabs = document.querySelectorAll('.shop-tab');
+  const shopItemsArea = document.getElementById('shopItemsArea');
+  const shopMessage = document.getElementById('shopMessage');
+  let shopItems = { cars: [], houses: [], weapons: [], crypto: [] };
+
+  shopTabs.forEach(tab => {
+    tab.onclick = () => renderShopItems(tab.dataset.category);
+  });
+
+  function generateShopItem(category) {
+    let names, range;
+    switch (category) {
+      case 'cars': names = ['Spyder GT', 'Phantom Cruiser']; range = [100000, 2000000]; break;
+      case 'houses': names = ['Alpine Chalet', 'Island Villa']; range = [500000, 5000000]; break;
+      case 'weapons': names = ['Laser Rifle', 'EMP Grenade']; range = [10000, 100000]; break;
+      case 'crypto': names = ['Crypto Mining PC']; range = [30000, 30000]; break;
+    }
+    return { name: names[Math.floor(Math.random() * names.length)], price: randomRange(...range) };
+  }
+
+  function renderShopItems(category) {
+    shopMessage.textContent = '';
+    if (shopItems[category].length === 0) {
+      for (let i = 0; i < 3; i++) shopItems[category].push(generateShopItem(category));
+    }
+    shopItemsArea.innerHTML = '';
+    shopItems[category].forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'shop-item';
+      div.innerHTML = <strong>${item.name}</strong><br/>Price: ${formatMoney(item.price)}<br/>
+        <button onclick="buyItem('${category}', ${i})">Buy</button>;
+      shopItemsArea.appendChild(div);
+    });
     renderCryptoInfo();
-  </script>
+  }
+
+  function buyItem(category, index) {
+    const item = shopItems[category][index];
+    if (wallet < item.price) {
+      shopMessage.textContent = 'Insufficient funds.';
+      return;
+    }
+    wallet -= item.price;
+    if (category === 'crypto') cryptoPCs++;
+    shopItems[category].splice(index, 1);
+    saveState();
+    updateWalletDisplay();
+    renderShopItems(category);
+    renderCryptoInfo();
+  }
+
+  function renderCryptoInfo() {
+    document.getElementById('cryptoPCInfo').innerHTML = 
+      <strong>Crypto PCs:</strong> ${cryptoPCs}<br/>
+      Earnings: ${formatMoney(cryptoPCs * 1000)} / sec
+    ;
+  }
+
+  setInterval(() => {
+    if (cryptoPCs > 0) {
+      wallet += cryptoPCs * 1000;
+      updateWalletDisplay();
+      saveState();
+    }
+  }, 1000);
+
+  loadState();
+  updateWalletDisplay();
+  renderRecruits();
+  renderAcceptedMissions();
+  renderCryptoInfo();
+</script>
+
 </body>
 </html>
