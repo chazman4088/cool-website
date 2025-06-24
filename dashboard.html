@@ -5,314 +5,161 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Agent Dashboard</title>
   <style>
-    body {
-      background: #0d0d0d;
-      color: #00ffcc;
-      font-family: 'Courier New', Courier, monospace;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background: #000;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #00ffcc;
-      position: relative;
-      z-index: 1001;
-    }
-
-    .menu-toggle {
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      padding: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .mission-box {
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    button {
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      font-weight: bold;
-      cursor: pointer;
-      margin: 10px;
-    }
-
-    button:hover {
-      background: #00ccb3;
-    }
-
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: -300px;
-      width: 300px;
-      height: 100%;
-      background: #000;
-      border-left: 2px solid #00ffcc;
-      padding: 20px;
-      transition: 0.3s ease;
-      overflow-y: auto;
-      z-index: 1000;
-    }
-
-    .side-menu.open {
-      right: 0;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      color: #00ffcc;
-      font-size: 1.5em;
-      cursor: pointer;
-      float: right;
-      margin-bottom: 10px;
-    }
-
-    .accepted-mission, .recruit {
-      border: 1px solid #00ffcc;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: rgba(0, 255, 204, 0.05);
-    }
-
-    details summary {
-      cursor: pointer;
-    }
-
-    .status {
-      margin-top: 10px;
-    }
-
-    #statusOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: rgba(0,0,0,0.95);
-      color: #00ffcc;
-      font-size: 2rem;
-      font-weight: bold;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      z-index: 2000;
-    }
-
-    #wallet {
-      font-weight: bold;
-    }
+    body { background: #0d0d0d; color: #00ffcc; font-family: monospace; margin: 0; padding: 0; }
+    header { background: #000; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-toggle { background: #00ffcc; color: #000; border: none; padding: 8px 16px; cursor: pointer; }
+    #wallet { font-weight: bold; }
+    .side-menu { position: fixed; top: 0; right: -320px; width: 320px; height: 100%; background: #000; border-left: 2px solid #00ffcc; padding: 20px; transition: right 0.3s ease; overflow-y: auto; }
+    .side-menu.open { right: 0; }
+    .close-btn { background: none; border: none; color: #00ffcc; font-size: 20px; cursor: pointer; float: right; }
+    .mission-box, .recruit-box { padding: 20px; text-align: center; margin-top: 20px; }
+    button { margin: 10px; background: #00ffcc; color: #000; border: none; padding: 8px 16px; cursor: pointer; }
+    button:hover { background: #00ccb3; }
+    .card { border: 1px solid #00ffcc; margin: 10px 0; padding: 10px; background: rgba(0,255,204,0.05); }
+    details summary { cursor: pointer; }
+    #statusOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: #00ffcc; display: none; align-items: center; justify-content: center; font-size: 1.5rem; text-align: center; z-index: 9999; }
   </style>
 </head>
 <body>
   <header>
-    <h2>🕵️ Agent CH Dashboard</h2>
-    <span id="wallet">💰 €100,000</span>
-    <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
+    <h2>🕵️ Agent Dashboard</h2>
+    <div>
+      <span id="wallet">💰 €100,000</span>
+      <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    </div>
   </header>
 
-  <div class="side-menu" id="sideMenu">
-    <button class="close-btn" onclick="toggleMenu()">←</button>
-    <h3>✅ Accepted Missions</h3>
-    <div id="acceptedMissionsList"></div>
-    <h3>🧑‍💼 Recruits</h3>
-    <div id="recruitList"></div>
+  <div id="menuPanel" class="side-menu">
+    <button class="close-btn" onclick="toggleMenu()">×</button>
+    <h3>✅ Missions</h3>
+    <div id="missionsList"></div>
+    <hr>
+    <h3>🧑 Recruits</h3>
+    <div id="recruitsList"></div>
   </div>
 
   <div class="mission-box" id="missionBox"></div>
-  <div class="mission-box" id="recruitBox"></div>
+  <div class="recruit-box" id="recruitBox"></div>
+
   <div id="statusOverlay"></div>
 
   <script>
-    let wallet = 100000;
-    const acceptedMissions = [];
-    const recruits = [];
+    let wallet = 100000, missions = [], recruits = [], current = null;
 
-    const missions = [
-      "Intercept enemy transmission",
-      "Surveil high-value target",
-      "Extract compromised agent",
-      "Infiltrate secure facility",
-      "Plant tracking device",
-      "Retrieve encrypted data",
-      "Neutralize rogue operative",
-      "Secure secret package"
-    ];
-
-    const missionDetails = [
-      "Location: Classified coordinates",
-      "Timeframe: Within 24 hours",
-      "Contact: Agent X",
-      "Risk Level: High",
-      "Backup: Not available",
-      "Transport: Stealth vehicle",
-      "Objective: Capture, not kill",
-      "Duration: Approx. 3 hours"
+    const missionTemplates = [
+      "Intercept enemy transmission", "Surveil high-value target",
+      "Extract compromised agent",   "Infiltrate secure facility",
+      "Plant tracking device",       "Retrieve encrypted data",
+      "Neutralize rogue operative",  "Secure secret package"
     ];
 
     function toggleMenu() {
-      document.getElementById('sideMenu').classList.toggle('open');
-      updateAcceptedMissions();
+      document.getElementById('menuPanel').classList.toggle('open');
+      renderLists();
     }
 
-    function updateWalletDisplay() {
-      document.getElementById("wallet").textContent = `💰 €${wallet.toLocaleString()}`;
+    function updateWallet() {
+      document.getElementById('wallet').textContent = `💰 €${wallet.toLocaleString()}`;
     }
 
-    function generateMission() {
-      const mission = missions[Math.floor(Math.random() * missions.length)];
-      const details = Array.from({ length: 3 }, () => missionDetails[Math.floor(Math.random() * missionDetails.length)]);
-      const payout = Math.floor(Math.random() * (145000 - 50000 + 1)) + 50000;
-      return { mission, details, payout };
+    function random(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     function showMission() {
-      const { mission, details, payout } = generateMission();
-      document.getElementById("missionBox").innerHTML = `
-        <h3>🗂 Mission Offer</h3>
-        <p><strong>${mission}</strong></p>
-        <p><strong>Payout:</strong> €${payout.toLocaleString()}</p>
-        <details>
-          <summary>Show Details</summary>
-          ${details.map(d => `<p>${d}</p>`).join("")}
-        </details>
-        <button onclick="acceptMission('${mission}', ${JSON.stringify(details)}, ${payout})">Accept</button>
-        <button onclick="declineMission()">Decline</button>
-      `;
+      const text = missionTemplates[Math.floor(Math.random() * missionTemplates.length)];
+      const details = `Details for "${text}" mission...`;
+      const payout = random(50000,145000);
+      current = { type: "mission", text, details, payout };
+      renderBoxes();
     }
 
-    function acceptMission(name, details, payout) {
-      acceptedMissions.push({ name, details, payout, status: "Mission accepted" });
-      document.getElementById('missionBox').innerHTML = `
-        <p>✅ Mission accepted.</p>
-        <button onclick="showMission()">Request Another Mission</button>
-      `;
+    function acceptMission() {
+      missions.push({ ...current });
+      renderLists();
+      current = null;
+      renderBoxes();
     }
 
-    function declineMission() {
-      document.getElementById('missionBox').innerHTML = `
-        <p>❌ Mission declined.</p>
-        <button onclick="showMission()">Request Another Mission</button>
-      `;
-    }
-
-    function updateAcceptedMissions() {
-      const container = document.getElementById("acceptedMissionsList");
-      container.innerHTML = acceptedMissions.map((m, index) => `
-        <div class="accepted-mission">
-          <details>
-            <summary>${m.name}</summary>
-            ${m.details.map(d => `<p>${d}</p>`).join("")}
-            <p><strong>Payout:</strong> €${m.payout.toLocaleString()}</p>
-            <p class="status"><strong>Status:</strong> ${m.status}</p>
-            <button onclick="markStatus(${index})">Mark Completed</button>
-          </details>
-        </div>
-      `).join("");
-    }
-
-    function markStatus(index) {
-      const overlay = document.getElementById("statusOverlay");
-      const hasRecruits = recruits.length > 0;
-
-      if (Math.random() < 0.2 && hasRecruits) {
-        const miaIndex = Math.floor(Math.random() * recruits.length);
-        const miaAgent = recruits.splice(miaIndex, 1)[0];
-        overlay.textContent = `💀 ${miaAgent.name} has been captured. Mission failed.`;
-      } else {
-        const reward = acceptedMissions[index].payout;
-        wallet += reward;
-        overlay.textContent = `🎉 Mission complete! Payment received: €${reward.toLocaleString()}`;
-      }
-
-      overlay.style.display = "flex";
-      setTimeout(() => {
-        overlay.style.display = "none";
-        acceptedMissions.splice(index, 1);
-        updateAcceptedMissions();
-        updateRecruits();
-        updateWalletDisplay();
-      }, 3000);
+    function completeMission(idx) {
+      const m = missions.splice(idx,1)[0];
+      const isMIA = Math.random() < 0.2 && recruits.length;
+      showOverlay(() => {
+        if (isMIA) {
+          const rIdx = random(0, recruits.length-1);
+          const r = recruits.splice(rIdx,1)[0];
+          return `😱 ${r.name} was captured. Mission failed.`;
+        } else {
+          wallet += m.payout;
+          return `✅ Mission completed! You earned €${m.payout.toLocaleString()}.`;
+        }
+      }, () => {
+        updateWallet(); renderLists();
+      });
     }
 
     function showRecruit() {
-      const names = ["Shadow", "Viper", "Ghost", "Blaze", "Nova", "Raven", "Hunter"];
-      const locations = ["Berlin", "Tokyo", "New York", "Paris", "Cairo", "Istanbul"];
-      const expertise = ["Assassination", "Stealth", "Hacking"];
-
-      const recruit = {
-        name: names[Math.floor(Math.random() * names.length)],
-        age: Math.floor(Math.random() * 22) + 25,
-        location: locations[Math.floor(Math.random() * locations.length)],
-        skill: expertise[Math.floor(Math.random() * expertise.length)],
-        cost: Math.floor(Math.random() * (60000 - 20000 + 1)) + 20000
+      const names=["Shadow","Viper","Ghost","Blaze","Nova","Raven","Hunter"];
+      const locs=["Berlin","Tokyo","NYC","Paris","Cairo","Moscow"];
+      const skills=["Assassination","Stealth","Hacking"];
+      current = {
+        type: "recruit",
+        name: names[Math.floor(Math.random()*names.length)],
+        age: random(25,45),
+        location: locs[Math.floor(Math.random()*locs.length)],
+        skill: skills[Math.floor(Math.random()*skills.length)],
+        cost: random(20000,60000)
       };
-
-      document.getElementById("recruitBox").innerHTML = `
-        <h3>🧑‍💼 Recruit Available</h3>
-        <div class="recruit">
-          <p><strong>Name:</strong> ${recruit.name}</p>
-          <p><strong>Age:</strong> ${recruit.age}</p>
-          <p><strong>Location:</strong> ${recruit.location}</p>
-          <p><strong>Expertise:</strong> ${recruit.skill}</p>
-          <p><strong>Hiring Cost:</strong> €${recruit.cost.toLocaleString()}</p>
-          <button onclick='hireRecruit(${JSON.stringify(JSON.stringify(recruit))})'>Hire</button>
-          <button onclick="showRecruit()">View Next Recruit</button>
-        </div>
-      `;
+      renderBoxes();
     }
 
-    function hireRecruit(recruitJSON) {
-      const recruit = JSON.parse(JSON.parse(recruitJSON));
-      if (wallet < recruit.cost) {
-        alert("Insufficient funds to hire this recruit.");
-        return;
-      }
-      wallet -= recruit.cost;
-      recruits.push(recruit);
-      updateRecruits();
-      updateWalletDisplay();
+    function hireRecruit() {
+      if (wallet < current.cost) return alert("Not enough money!");
+      wallet -= current.cost;
+      recruits.push({ ...current });
+      showOverlay(`👍 Hired ${current.name} for €${current.cost.toLocaleString()}`, () => {
+        updateWallet(); renderLists(); current=null; renderBoxes();
+      });
+    }
 
-      const overlay = document.getElementById("statusOverlay");
-      overlay.textContent = `🤝 Well done, ${recruit.name} is happy to join.`;
-      overlay.style.display = "flex";
+    function renderLists() {
+      let html = missions.length ? missions.map((m,i) => `
+        <div class="card"><strong>${m.text}</strong><br>Payout: €${m.payout.toLocaleString()}<br>
+        <button onclick="completeMission(${i})">Mark Completed</button></div>`).join('') : '<p>No missions.</p>';
+      document.getElementById('missionsList').innerHTML = html;
 
+      html = recruits.length ? recruits.map(r => `
+        <div class="card"><strong>${r.name}</strong> — ${r.skill}</div>`).join('') : '<p>No recruits.</p>';
+      document.getElementById('recruitsList').innerHTML = html;
+    }
+
+    function renderBoxes() {
+      const mb = document.getElementById('missionBox');
+      mb.innerHTML = current && current.type=="mission" ? `
+        <div class="card"><h3>${current.text}</h3>Payout: €${current.payout.toLocaleString()}<br>
+        ${current.details}<br><button onclick="acceptMission()">Accept Mission</button></div>` : '';
+
+      const rb = document.getElementById('recruitBox');
+      rb.innerHTML = current && current.type=="recruit" ? `
+        <div class="card"><h3>${current.name}</h3>Age: ${current.age}, ${current.location}<br>Skill: ${current.skill}<br>
+        Cost: €${current.cost.toLocaleString()}<br><button onclick="hireRecruit()">Hire</button><button onclick="showRecruit()">Next Recruit</button></div>` : '';
+    }
+
+    function showOverlay(content, cb=null) {
+      const o = document.getElementById('statusOverlay');
+      o.textContent = content;
+      o.style.display = 'flex';
       setTimeout(() => {
-        overlay.style.display = "none";
-        document.getElementById("recruitBox").innerHTML = "";
-      }, 3000);
+        o.style.display = 'none';
+        cb && cb();
+      },3000);
     }
 
-    function updateRecruits() {
-      const container = document.getElementById("recruitList");
-      if (recruits.length === 0) {
-        container.innerHTML = "<p>No recruits yet.</p>";
-        return;
-      }
-      container.innerHTML = recruits.map(r => `
-        <div class="recruit">
-          <p><strong>${r.name}</strong> — ${r.skill}</p>
-        </div>
-      `).join("");
-    }
-
-    // Initialize page
+    // Initialize
+    updateWallet();
+    renderLists();
     showMission();
     showRecruit();
-    updateWalletDisplay();
   </script>
 </body>
 </html>
