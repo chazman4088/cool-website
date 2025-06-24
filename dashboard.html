@@ -11,6 +11,7 @@
       font-family: 'Courier New', Courier, monospace;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
     }
 
     header {
@@ -21,7 +22,7 @@
       align-items: center;
       border-bottom: 2px solid #00ffcc;
       position: relative;
-      z-index: 1001;
+      z-index: 10;
       flex-wrap: wrap;
     }
 
@@ -38,6 +39,8 @@
     .mission-box {
       padding: 40px 20px;
       text-align: center;
+      position: relative;
+      z-index: 1;
     }
 
     button {
@@ -63,9 +66,9 @@
       background: #000;
       border-left: 2px solid #00ffcc;
       padding: 20px;
-      transition: 0.3s ease;
+      transition: right 0.3s ease;
       overflow-y: auto;
-      z-index: 1000;
+      z-index: 100;
     }
 
     .side-menu.open {
@@ -111,7 +114,7 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      z-index: 2000;
+      z-index: 999;
     }
   </style>
 </head>
@@ -168,15 +171,27 @@
     const acceptedMissions = [];
 
     function toggleMenu() {
-      document.getElementById('sideMenu').classList.toggle('open');
-      updateAcceptedMissions();
-      document.getElementById('recruitPanel').classList.remove('open');
+      const sideMenu = document.getElementById('sideMenu');
+      const recruitPanel = document.getElementById('recruitPanel');
+      const isOpen = sideMenu.classList.contains('open');
+
+      sideMenu.classList.toggle('open');
+      if (!isOpen) {
+        recruitPanel.classList.remove('open');
+        updateAcceptedMissions();
+      }
     }
 
     function toggleRecruitPanel() {
-      document.getElementById('recruitPanel').classList.toggle('open');
-      document.getElementById('sideMenu').classList.remove('open');
-      generateRecruit();
+      const recruitPanel = document.getElementById('recruitPanel');
+      const sideMenu = document.getElementById('sideMenu');
+      const isOpen = recruitPanel.classList.contains('open');
+
+      recruitPanel.classList.toggle('open');
+      if (!isOpen) {
+        sideMenu.classList.remove('open');
+        generateRecruit();
+      }
     }
 
     function generateMission() {
@@ -288,6 +303,7 @@
       }, 3000);
     }
 
+    // Load initial mission
     showMission();
   </script>
 </body>
