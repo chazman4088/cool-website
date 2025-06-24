@@ -13,6 +13,14 @@
       padding: 0;
     }
 
+    .layout {
+      transition: margin-right 0.3s ease;
+    }
+
+    .layout.shifted {
+      margin-right: 300px; /* matches sidebar width */
+    }
+
     header {
       background: #000;
       padding: 10px 20px;
@@ -20,13 +28,7 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #00ffcc;
-      position: relative;
-      z-index: 1001;
-      transition: margin-right 0.3s ease;
-    }
-
-    header.shrink {
-      margin-right: 300px; /* same as sidebar width */
+      z-index: 1;
     }
 
     .menu-toggle {
@@ -41,6 +43,7 @@
     .mission-box {
       padding: 40px 20px;
       text-align: center;
+      transition: margin-right 0.3s ease;
     }
 
     button {
@@ -60,19 +63,20 @@
     .side-menu {
       position: fixed;
       top: 0;
-      right: -300px;
+      right: 0;
       width: 300px;
       height: 100%;
       background: #000;
       border-left: 2px solid #00ffcc;
       padding: 20px;
-      transition: right 0.3s ease;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
       overflow-y: auto;
-      z-index: 1000;
+      z-index: 2;
     }
 
     .side-menu.open {
-      right: 0;
+      transform: translateX(0);
     }
 
     .close-btn {
@@ -114,24 +118,26 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      z-index: 2000;
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <header id="mainHeader">
-    <h2>🕵️ Agent CH Dashboard</h2>
-    <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
-  </header>
+  <div id="mainLayout" class="layout">
+    <header>
+      <h2>🕵️ Agent CH Dashboard</h2>
+      <button class="menu-toggle" onclick="toggleMenu()">☰ View Missions</button>
+    </header>
+
+    <div class="mission-box" id="missionBox">
+      <!-- Mission offer will appear here -->
+    </div>
+  </div>
 
   <div class="side-menu" id="sideMenu">
     <button class="close-btn" onclick="toggleMenu()">←</button>
     <h3>✅ Accepted Missions</h3>
     <div id="acceptedMissionsList"></div>
-  </div>
-
-  <div class="mission-box" id="missionBox">
-    <!-- Mission offer will appear here -->
   </div>
 
   <div id="statusOverlay"></div>
@@ -163,9 +169,9 @@
 
     function toggleMenu() {
       const sideMenu = document.getElementById('sideMenu');
-      const header = document.getElementById('mainHeader');
-      sideMenu.classList.toggle('open');
-      header.classList.toggle('shrink');
+      const layout = document.getElementById('mainLayout');
+      const isOpen = sideMenu.classList.toggle('open');
+      layout.classList.toggle('shifted', isOpen);
       updateAcceptedMissions();
     }
 
@@ -234,9 +240,9 @@
       const overlay = document.getElementById("statusOverlay");
 
       if (status === "Completed") {
-        overlay.textContent = "Congratulations, agent";
+        overlay.textContent = "🎉 Congratulations, agent";
       } else {
-        overlay.textContent = "It's ok, this one was bound to be a flop, agent";
+        overlay.textContent = "💥 It's ok, this one was bound to be a flop, agent";
       }
 
       overlay.style.display = "flex";
