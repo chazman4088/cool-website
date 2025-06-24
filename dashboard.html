@@ -1,699 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agent Dashboard</title>
-  <style>
-    body {
-      background: #0d0d0d;
-      color: #00ffcc;
-      font-family: 'Courier New', Courier, monospace;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    header {
-      background: #000;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #00ffcc;
-      position: relative;
-      z-index: 1001;
-    }
-    .menu-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      padding: 10px 14px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 3px;
-      transition: background 0.2s ease;
-    }
-    button:hover {
-      background: #00ccb3;
-    }
-    main {
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .wallet {
-      font-size: 1.25rem;
-      margin-bottom: 15px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 320px;
-      height: 100vh;
-      background: #000;
-      border-left: 2px solid #00ffcc;
-      padding: 20px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      z-index: 1000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-    }
-    .side-menu.open {
-      transform: translateX(0);
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      color: #00ffcc;
-      font-size: 1.5em;
-      cursor: pointer;
-      float: right;
-      margin-bottom: 10px;
-    }
-    .section-header {
-      margin-bottom: 10px;
-      font-size: 1.2rem;
-      border-bottom: 1px solid #00ffcc;
-      padding-bottom: 4px;
-    }
-    .mission, .recruit, .stock, .shop-item, .crypto-pc {
-      border: 1px solid #00ffcc;
-      background: rgba(0, 255, 204, 0.05);
-      margin-bottom: 10px;
-      padding: 8px 10px;
-      border-radius: 4px;
-    }
-    details summary {
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .status-message {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    #statusOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: rgba(0,0,0,0.95);
-      color: #00ffcc;
-      font-size: 2rem;
-      font-weight: bold;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      z-index: 2000;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    label {
-      display: block;
-      margin: 6px 0 2px;
-    }
-    input[type="number"], input[type="text"] {
-      width: 100%;
-      padding: 6px;
-      margin-bottom: 10px;
-      border-radius: 3px;
-      border: 1px solid #00ffcc;
-      background: #001a19;
-      color: #00ffcc;
-      font-family: 'Courier New', monospace;
-    }
-    select {
-      width: 100%;
-      padding: 6px;
-      margin-bottom: 10px;
-      border-radius: 3px;
-      border: 1px solid #00ffcc;
-      background: #001a19;
-      color: #00ffcc;
-      font-family: 'Courier New', monospace;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-
-<header>
-  <h2>🕵️ Agent CH Dashboard</h2>
-  <div class="menu-buttons">
-    <button id="btnMissions">☰ View Missions</button>
-    <button id="btnRecruits">🧑‍🤝‍🧑 Hire Recruits</button>
-    <button id="btnStocks">📈 Invest in Stocks</button>
-    <button id="btnShop">🛒 Visit Shop</button>
-    <button id="btnCrypto">💻 Crypto Mining</button>
-  </div>
-</header>
-
-<div class="wallet" id="walletDisplay">Agent Wallet: €100,000</div>
-
-<!-- Missions Sidebar -->
-<div class="side-menu" id="missionsSidebar" aria-hidden="true" tabindex="-1">
-  <button class="close-btn" aria-label="Close Missions Sidebar" id="closeMissions">←</button>
-  <h3 class="section-header">✅ Accepted Missions</h3>
-  <div id="acceptedMissionsList">No missions accepted yet.</div>
-</div>
-
-<!-- Recruits Sidebar -->
-<div class="side-menu" id="recruitsSidebar" aria-hidden="true" tabindex="-1" style="width: 350px;">
-  <button class="close-btn" aria-label="Close Recruits Sidebar" id="closeRecruits">←</button>
-  <h3 class="section-header">👥 Hire Recruits</h3>
-  <div id="recruitProfile">
-    <p>Loading recruit...</p>
-  </div>
-  <div id="recruitMessage" class="status-message"></div>
-</div>
-
-<!-- Stocks Sidebar -->
-<div class="side-menu" id="stocksSidebar" aria-hidden="true" tabindex="-1">
-  <button class="close-btn" aria-label="Close Stocks Sidebar" id="closeStocks">←</button>
-  <h3 class="section-header">📊 Invest in Stocks</h3>
-  <div id="stockInvestmentArea">
-    <p>Loading stock...</p>
-  </div>
-  <div id="stockMessage" class="status-message"></div>
-</div>
-
-<!-- Shop Sidebar -->
-<div class="side-menu" id="shopSidebar" aria-hidden="true" tabindex="-1">
-  <button class="close-btn" aria-label="Close Shop Sidebar" id="closeShop">←</button>
-  <h3 class="section-header">🛍️ Shop</h3>
-  <div>
-    <button id="shopCarsBtn">Cars</button>
-    <button id="shopHousesBtn">Houses</button>
-    <button id="shopWeaponsBtn">Weapons</button>
-  </div>
-  <div id="shopItemsArea" style="margin-top: 15px;">
-    Loading shop items...
-  </div>
-  <div id="shopMessage" class="status-message"></div>
-</div>
-
-<!-- Crypto Sidebar -->
-<div class="side-menu" id="cryptoSidebar" aria-hidden="true" tabindex="-1" style="width: 300px;">
-  <button class="close-btn" aria-label="Close Crypto Sidebar" id="closeCrypto">←</button>
-  <h3 class="section-header">💻 Crypto Mining</h3>
-  <div>
-    <p>PCs Owned: <span id="pcCount">0</span></p>
-    <p>Earnings per second: €<span id="earningsPerSecond">0</span></p>
-    <button id="buyPCBtn">Buy PC (€30,000)</button>
-  </div>
-  <div id="cryptoMessage" class="status-message"></div>
-</div>
-
-<!-- Status Overlay -->
-<div id="statusOverlay" role="alert" aria-live="assertive"></div>
-
-<script>
-  // ======== State & Constants ========
-  let wallet = 100000;
-  let acceptedMissions = [];
-  let recruits = [];
-  let stocks = [];
-  let shopData = {
-    cars: [],
-    houses: [],
-    weapons: [],
-    restockTimeout: null,
-    allBought: false
-  };
-  let cryptoPCs = 0;
-  let cryptoEarningsPerSecond = 0;
-  let cryptoInterval;
-
-  // Save and Load State in localStorage
-  function saveState() {
-    localStorage.setItem('agentWallet', wallet);
-    localStorage.setItem('acceptedMissions', JSON.stringify(acceptedMissions));
-    localStorage.setItem('recruits', JSON.stringify(recruits));
-    localStorage.setItem('stocks', JSON.stringify(stocks));
-    localStorage.setItem('shopData', JSON.stringify(shopData));
-    localStorage.setItem('cryptoPCs', cryptoPCs);
-  }
-  function loadState() {
-    const savedWallet = localStorage.getItem('agentWallet');
-    if (savedWallet !== null) wallet = Number(savedWallet);
-
-    const savedMissions = localStorage.getItem('acceptedMissions');
-    if (savedMissions) acceptedMissions = JSON.parse(savedMissions);
-
-    const savedRecruits = localStorage.getItem('recruits');
-    if (savedRecruits) recruits = JSON.parse(savedRecruits);
-
-    const savedStocks = localStorage.getItem('stocks');
-    if (savedStocks) stocks = JSON.parse(savedStocks);
-
-    const savedShop = localStorage.getItem('shopData');
-    if (savedShop) shopData = JSON.parse(savedShop);
-
-    const savedCryptoPCs = localStorage.getItem('cryptoPCs');
-    if (savedCryptoPCs !== null) cryptoPCs = Number(savedCryptoPCs);
-  }
-
-  // ======== Utility ========
-  function formatMoney(num) {
-    return num.toLocaleString('en-GB', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 });
-  }
-  function randomRange(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  // ======== UI Elements ========
-  const walletDisplay = document.getElementById('walletDisplay');
-  const statusOverlay = document.getElementById('statusOverlay');
-
-  // Sidebars and Buttons
-  const missionsSidebar = document.getElementById('missionsSidebar');
-  const recruitsSidebar = document.getElementById('recruitsSidebar');
-  const stocksSidebar = document.getElementById('stocksSidebar');
-  const shopSidebar = document.getElementById('shopSidebar');
-  const cryptoSidebar = document.getElementById('cryptoSidebar');
-
-  const btnMissions = document.getElementById('btnMissions');
-  const btnRecruits = document.getElementById('btnRecruits');
-  const btnStocks = document.getElementById('btnStocks');
-  const btnShop = document.getElementById('btnShop');
-  const btnCrypto = document.getElementById('btnCrypto');
-
-  // Close buttons
-  document.getElementById('closeMissions').onclick = () => closeSidebar(missionsSidebar);
-  document.getElementById('closeRecruits').onclick = () => closeSidebar(recruitsSidebar);
-  document.getElementById('closeStocks').onclick = () => closeSidebar(stocksSidebar);
-  document.getElementById('closeShop').onclick = () => closeSidebar(shopSidebar);
-  document.getElementById('closeCrypto').onclick = () => closeSidebar(cryptoSidebar);
-
-  // Sidebar toggle helpers
-  function closeSidebar(sidebar) {
-    sidebar.classList.remove('open');
-    sidebar.setAttribute('aria-hidden', 'true');
-    // Reset tabindex to remove focus trap
-    sidebar.tabIndex = -1;
-  }
-  function openSidebar(sidebar) {
-    // Close all sidebars first
-    [missionsSidebar, recruitsSidebar, stocksSidebar, shopSidebar, cryptoSidebar].forEach(s => {
-      s.classList.remove('open');
-      s.setAttribute('aria-hidden', 'true');
-      s.tabIndex = -1;
-    });
-    // Open this sidebar
-    sidebar.classList.add('open');
-    sidebar.setAttribute('aria-hidden', 'false');
-    sidebar.tabIndex = 0;
-    sidebar.focus();
-  }
-
-  // Button click handlers
-  btnMissions.onclick = () => openSidebar(missionsSidebar);
-  btnRecruits.onclick = () => {
-    openSidebar(recruitsSidebar);
-    loadRecruitProfile();
-  };
-  btnStocks.onclick = () => {
-    openSidebar(stocksSidebar);
-    loadStock();
-  };
-  btnShop.onclick = () => {
-    openSidebar(shopSidebar);
-    renderShopItems('cars'); // default to cars tab
-  };
-  btnCrypto.onclick = () => {
-    openSidebar(cryptoSidebar);
-    renderCryptoInfo();
-  };
-
-  // ======== Wallet & Display ========
-  function updateWalletDisplay() {
-    walletDisplay.textContent = `Agent Wallet: ${formatMoney(wallet)}`;
-  }
-
-  // ======== Missions ========
-  const acceptedMissionsList = document.getElementById('acceptedMissionsList');
-
-  // Generate a mission payout (50k-145k)
-  function generateMissionPayout() {
-    return randomRange(50000, 145000);
-  }
-  // Generate mission details (dummy example)
-  function generateMissionDetails() {
-    const missionNames = ['Retrieve Data', 'Secure Asset', 'Neutralize Target', 'Infiltrate Base', 'Rescue Informant'];
-    const name = missionNames[Math.floor(Math.random() * missionNames.length)];
-    const payout = generateMissionPayout();
-    return { name, payout };
-  }
-  // Show accepted missions or placeholder
-  function renderAcceptedMissions() {
-    if (acceptedMissions.length === 0) {
-      acceptedMissionsList.textContent = 'No missions accepted yet.';
-      return;
-    }
-    acceptedMissionsList.innerHTML = '';
-    acceptedMissions.forEach((m, i) => {
-      const div = document.createElement('div');
-      div.className = 'mission';
-      div.innerHTML = `<strong>${m.name}</strong><br>Payout: ${formatMoney(m.payout)}<br><button data-index="${i}" class="completeMissionBtn">Complete Mission</button>`;
-      acceptedMissionsList.appendChild(div);
-    });
-    // Add event listeners to complete buttons
-    document.querySelectorAll('.completeMissionBtn').forEach(btn => {
-      btn.onclick = e => {
-        const idx = Number(e.target.getAttribute('data-index'));
-        completeMission(idx);
-      };
-    });
-  }
-
-  // Accept new mission button (inject into header or main)
-  function createAcceptMissionButton() {
-    const existing = document.getElementById('acceptMissionBtn');
-    if (existing) return; // already exists
-
-    const btn = document.createElement('button');
-    btn.id = 'acceptMissionBtn';
-    btn.textContent = '🎯 Accept New Mission';
-    btn.style.marginBottom = '20px';
-    btn.style.display = 'block';
-    btn.style.marginLeft = 'auto';
-    btn.style.marginRight = 'auto';
-    btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '1.1rem';
-    btn.style.cursor = 'pointer';
-
-    btn.onclick = () => {
-      const newMission = generateMissionDetails();
-      acceptedMissions.push(newMission);
-      saveState();
-      renderAcceptedMissions();
-      btn.disabled = true;
-      showStatusMessage(`Mission accepted: ${newMission.name} for ${formatMoney(newMission.payout)}`, 3000);
-    };
-
-    // Insert after wallet display
-    walletDisplay.insertAdjacentElement('afterend', btn);
-  }
-
-  // Complete mission logic with 1 in 10 chance recruit MIA
-  function completeMission(index) {
-    if (index < 0 || index >= acceptedMissions.length) return;
-
-    const mission = acceptedMissions[index];
-    // 1 in 10 chance recruit goes MIA => mission failure, no payout
-    const mialChance = 10;
-    const mialRoll = randomRange(1, mialChance);
-    if (mialRoll === 1 && recruits.length > 0) {
-      // Remove a random recruit
-      const lostIndex = randomRange(0, recruits.length - 1);
-      const lostRecruit = recruits.splice(lostIndex, 1)[0];
-      acceptedMissions.splice(index,1);
-      saveState();
-      renderAcceptedMissions();
-      renderRecruits();
-      updateWalletDisplay();
-      showStatusMessage(`Mission failed! Recruit ${lostRecruit.name} went MIA!`, 4000);
-      return;
-    }
-    // Otherwise mission success: add payout
-    wallet += mission.payout;
-    acceptedMissions.splice(index,1);
-    saveState();
-    renderAcceptedMissions();
-    updateWalletDisplay();
-    showStatusMessage(`Mission complete! You earned ${formatMoney(mission.payout)}.`, 4000);
-    btnAcceptMission.disabled = false;
-  }
-
-  // Show status messages overlay
-  function showStatusMessage(msg, duration=2000) {
-    statusOverlay.textContent = msg;
-    statusOverlay.style.display = 'flex';
-    setTimeout(() => {
-      statusOverlay.style.display = 'none';
-    }, duration);
-  }
-
-  // ======== Recruits ========
-  const recruitProfileDiv = document.getElementById('recruitProfile');
-  const recruitMessage = document.getElementById('recruitMessage');
-
-  // Generate a recruit with random name & cost
-  function generateRecruit() {
-    const names = ['Alex', 'Casey', 'Jordan', 'Morgan', 'Riley', 'Taylor', 'Drew', 'Cameron', 'Avery', 'Quinn'];
-    const costs = [20000, 30000, 40000, 50000, 60000];
-    return {
-      name: names[Math.floor(Math.random() * names.length)],
-      cost: costs[Math.floor(Math.random() * costs.length)]
-    };
-  }
-
-  // Load recruit profile for hiring
-  function loadRecruitProfile() {
-    recruitMessage.textContent = '';
-    let currentRecruit = recruits.length > 0 ? recruits[recruits.length - 1] : null;
-    if (!currentRecruit) {
-      // Generate new recruit to hire
-      currentRecruit = generateRecruit();
-      recruits.push(currentRecruit);
-      saveState();
-    }
-    recruitProfileDiv.innerHTML = `
-      <strong>Name:</strong> ${currentRecruit.name}<br/>
-      <strong>Hiring Cost:</strong> ${formatMoney(currentRecruit.cost)}<br/>
-      <button id="hireRecruitBtn">Hire Recruit</button>
-    `;
-
-    document.getElementById('hireRecruitBtn').onclick = () => {
-      if (wallet < currentRecruit.cost) {
-        recruitMessage.textContent = 'Not enough money to hire this recruit.';
-        return;
-      }
-      wallet -= currentRecruit.cost;
-      recruitMessage.textContent = `Recruited ${currentRecruit.name}!`;
-      saveState();
-      updateWalletDisplay();
-      renderRecruits();
-    };
-  }
-
-  // Render recruits count
-  function renderRecruits() {
-    btnRecruits.textContent = `🧑‍🤝‍🧑 Hire Recruits (${recruits.length})`;
-  }
-
-  // ======== Stocks ========
-  const stockInvestmentArea = document.getElementById('stockInvestmentArea');
-  const stockMessage = document.getElementById('stockMessage');
-
-  // Generate a random stock
-  function generateStock() {
-    const stockNames = ['EagleTech', 'Spyronix', 'Cryptoguard', 'ShadowBank', 'BlackLight Ltd'];
-    const selected = stockNames[Math.floor(Math.random() * stockNames.length)];
-    const currentPrice = randomRange(1000, 10000);
-    return { name: selected, price: currentPrice };
-  }
-
-  function loadStock() {
-    stockMessage.textContent = '';
-    const stock = generateStock();
-    stockInvestmentArea.innerHTML = `
-      <strong>Stock:</strong> ${stock.name}<br/>
-      <strong>Current Price:</strong> ${formatMoney(stock.price)}<br/>
-      <label>Investment Amount: €</label>
-      <input id="stockAmount" type="number" min="1" value="1000"/><br/>
-      <button id="investStockBtn">Invest</button>
-    `;
-    document.getElementById('investStockBtn').onclick = () => {
-      const amount = Number(document.getElementById('stockAmount').value);
-      if (isNaN(amount) || amount <= 0) {
-        stockMessage.textContent = 'Invalid amount.';
-        return;
-      }
-      if (amount > wallet) {
-        stockMessage.textContent = 'Not enough funds.';
-        return;
-      }
-      wallet -= amount;
-      const percentage = randomRange(78, 200); // 78% to 200%
-      const returnAmount = Math.floor(amount * (percentage / 100));
-      const diff = returnAmount - amount;
-      const outcome = diff > 0 ? 'gain' : diff < 0 ? 'loss' : 'breakeven';
-      wallet += returnAmount;
-      updateWalletDisplay();
-      saveState();
-      stockMessage.textContent = `Investment outcome: ${outcome.toUpperCase()} – You now have ${formatMoney(wallet)}.`;
-    };
-  }
-
-  // ======== Shop ========
-  const shopTabs = document.querySelectorAll('.shop-tab');
-  const shopItemsArea = document.getElementById('shopItemsArea');
-  const shopMessage = document.getElementById('shopMessage');
-  let shopItems = {
-    cars: [],
-    houses: [],
-    weapons: [],
-    crypto: []
-  };
-  let shopSoldOutTime = null;
-
-  shopTabs.forEach(tab => {
-    tab.onclick = () => {
-      const category = tab.dataset.category;
-      renderShopItems(category);
-    };
-  });
-
-  function generateShopItem(category) {
-    let names, priceRange;
-    switch (category) {
-      case 'cars':
-        names = ['Spyder GT', 'Phantom Cruiser', 'Stealth X'];
-        priceRange = [100000, 2000000];
-        break;
-      case 'houses':
-        names = ['Alpine Chalet', 'Island Villa', 'Urban Safehouse'];
-        priceRange = [500000, 5000000];
-        break;
-      case 'weapons':
-        names = ['Silenced Pistol', 'Laser Rifle', 'EMP Grenade'];
-        priceRange = [10000, 100000];
-        break;
-      case 'crypto':
-        names = ['Crypto Mining PC'];
-        priceRange = [30000, 30000];
-        break;
-    }
-    const name = names[Math.floor(Math.random() * names.length)];
-    const price = randomRange(priceRange[0], priceRange[1]);
-    return { name, price };
-  }
-
-  function renderShopItems(category) {
-    shopMessage.textContent = '';
-    if (shopItems[category].length === 0) {
-      for (let i = 0; i < 3; i++) {
-        shopItems[category].push(generateShopItem(category));
-      }
-    }
-    if (shopItems[category].length === 0) {
-      shopItemsArea.innerHTML = `<em>Seller will restock in <span id="restockTimer">2:00</span></em>`;
-      startRestockTimer(category);
-      return;
-    }
-    shopItemsArea.innerHTML = '';
-    shopItems[category].forEach((item, idx) => {
-      const div = document.createElement('div');
-      div.className = 'shop-item';
-      div.innerHTML = `<strong>${item.name}</strong><br/>Price: ${formatMoney(item.price)}<br/><button data-idx="${idx}" class="buyItemBtn">Buy</button>`;
-      shopItemsArea.appendChild(div);
-    });
-
-    document.querySelectorAll('.buyItemBtn').forEach(btn => {
-      btn.onclick = e => {
-        const index = Number(e.target.dataset.idx);
-        const item = shopItems[category][index];
-        if (wallet < item.price) {
-          shopMessage.textContent = 'Insufficient funds.';
-          return;
-        }
-        wallet -= item.price;
-        shopItems[category].splice(index, 1);
-        shopMessage.textContent = `Purchased ${item.name}.`;
-        if (category === 'crypto') cryptoPCs += 1;
-        saveState();
-        updateWalletDisplay();
-        renderShopItems(category);
-        renderCryptoInfo();
-      };
-    });
-
-    if (shopItems[category].length === 0) {
-      shopItemsArea.innerHTML = `<em>Seller will restock in <span id="restockTimer">2:00</span></em>`;
-      startRestockTimer(category);
-    }
-  }
-
-  function startRestockTimer(category) {
-    const timerDisplay = document.getElementById('restockTimer');
-    let timeLeft = 120;
-    const interval = setInterval(() => {
-      timeLeft--;
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = String(timeLeft % 60).padStart(2, '0');
-      if (timerDisplay) {
-        timerDisplay.textContent = `${minutes}:${seconds}`;
-      }
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        shopItems[category] = [];
-        renderShopItems(category);
-      }
-    }, 1000);
-  }
-
-  // ======== Crypto Mining ========
-  const cryptoPCInfo = document.getElementById('cryptoPCInfo');
-  function renderCryptoInfo() {
-    cryptoPCInfo.innerHTML = `
-      <strong>Crypto Mining PCs:</strong> ${cryptoPCs}<br/>
-      <strong>Earnings:</strong> ${formatMoney(cryptoPCs * 1000)} per second
-    `;
-  }
-
-  setInterval(() => {
-    if (cryptoPCs > 0) {
-      wallet += cryptoPCs * 1000;
-      updateWalletDisplay();
-      saveState();
-    }
-  }, 1000);
-
-  // ======== Init ========
-  updateWalletDisplay();
-  renderRecruits();
-  renderAcceptedMissions();
-  createAcceptMissionButton();
-  renderCryptoInfo();
-</script>
-
-Here's the **complete updated version of your `dashboard.html`** with:
-
-- **Old spy layout restored**
-- **Sidebars for Missions and Recruits hidden by default and toggled with buttons**
-- **Working features:** hiring recruits, accepting/completing missions, investing in stocks, shopping, crypto mining
-- **State fully saved in localStorage**
-- **Agent wallet synchronized with all actions**
-
----
-
-### ✅ Final `dashboard.html` (fully functional and ready-to-paste):
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
   <meta charset="UTF-8">
   <title>Spy Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background: #0a0a0a;
       color: #00ffcc;
-      margin: 0;
-      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
+
     header {
       background: #111;
       padding: 10px;
@@ -701,55 +26,101 @@ Here's the **complete updated version of your `dashboard.html`** with:
       font-size: 24px;
       border-bottom: 2px solid #00ffcc;
     }
+
     .wallet {
       text-align: center;
-      margin-top: 10px;
+      padding: 10px;
       font-size: 18px;
+      background-color: #111;
+      border-bottom: 1px solid #00ffcc;
     }
+
     .main {
       display: flex;
-      height: 90vh;
+      flex: 1;
+      min-height: 0;
     }
+
     .sidebar {
       width: 200px;
       background: #111;
       border-right: 2px solid #00ffcc;
       padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+
     .content {
       flex: 1;
-      padding: 20px;
+      padding: 15px;
       overflow-y: auto;
     }
+
     button {
-      margin: 5px 0;
       padding: 10px;
       width: 100%;
       background: #00ffcc;
       color: #000;
       border: none;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
     }
+
     .panel {
       display: none;
     }
+
     .shop-tabs {
-      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
     }
+
     .shop-tab {
-      display: inline-block;
       padding: 5px 10px;
-      margin-right: 10px;
       background: #222;
       color: #00ffcc;
       border: 1px solid #00ffcc;
       cursor: pointer;
     }
+
     .shop-item {
       margin: 10px 0;
       padding: 10px;
       border: 1px solid #00ffcc;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        border-right: none;
+        border-bottom: 2px solid #00ffcc;
+      }
+
+      .content {
+        padding: 10px;
+      }
+
+      button {
+        width: auto;
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    input[type="number"] {
+      width: 100px;
+      margin: 5px 0;
     }
   </style>
 </head>
@@ -846,7 +217,7 @@ Here's the **complete updated version of your `dashboard.html`** with:
       <strong>${mission.name}</strong><br/>
       Location: ${mission.location}<br/>
       Payout: ${formatMoney(mission.payout)}<br/>
-      <button onclick="acceptMission(${JSON.stringify(JSON.stringify(mission))})">Accept</button>
+      <button onclick='acceptMission(${JSON.stringify(JSON.stringify(mission))})'>Accept</button>
     `;
   }
 
@@ -908,7 +279,6 @@ Here's the **complete updated version of your `dashboard.html`** with:
     renderRecruits();
   }
 
-  // ==== Stock Investment ====
   function randomRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
@@ -947,7 +317,6 @@ Here's the **complete updated version of your `dashboard.html`** with:
     saveState();
   }
 
-  // ==== Shop ====
   const shopTabs = document.querySelectorAll('.shop-tab');
   const shopItemsArea = document.getElementById('shopItemsArea');
   const shopMessage = document.getElementById('shopMessage');
@@ -999,7 +368,6 @@ Here's the **complete updated version of your `dashboard.html`** with:
     renderCryptoInfo();
   }
 
-  // ==== Crypto Mining ====
   function renderCryptoInfo() {
     document.getElementById('cryptoPCInfo').innerHTML = `
       <strong>Crypto PCs:</strong> ${cryptoPCs}<br/>
@@ -1015,7 +383,6 @@ Here's the **complete updated version of your `dashboard.html`** with:
     }
   }, 1000);
 
-  // Init
   loadState();
   updateWalletDisplay();
   renderRecruits();
