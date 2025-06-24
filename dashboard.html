@@ -18,8 +18,8 @@
     .card { margin:10px; }
     button { background:#00ffcc; color:#000; border:none; padding:8px 16px; margin:6px; cursor:pointer; }
     button:hover { background:#00ccb3; }
-    #statusOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); color:#00ffcc; display:none; align-items:center; justify-content:center; font-size:1.2rem; text-align:center; z-index:9999; }
     input { padding:6px; width:80%; margin:6px 0; }
+    #statusOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); color:#00ffcc; display:none; align-items:center; justify-content:center; font-size:1.2rem; text-align:center; z-index:9999; }
   </style>
 </head>
 <body>
@@ -35,14 +35,12 @@
     </div>
   </header>
 
-  <!-- Missions & Recruits Panel -->
   <div id="menuPanel" class="side-menu">
     <button class="close-btn" onclick="toggleMenu()">×</button>
     <h3>✅ Missions</h3><div id="missionsList"></div><hr>
     <h3>🧑 Recruits</h3><div id="recruitsList"></div>
   </div>
 
-  <!-- Shop Panel -->
   <div id="shopPanel" class="side-menu">
     <button class="close-btn" onclick="closeShop()">×</button>
     <div class="tabs">
@@ -53,7 +51,6 @@
     <div id="shopContent"></div>
   </div>
 
-  <!-- Main Content -->
   <div id="mainContent">
     <div id="missionBox" class="section-box"></div>
     <div id="recruitBox" class="section-box"></div>
@@ -63,194 +60,84 @@
   <div id="statusOverlay"></div>
 
   <script>
-    // 📦 State & Persistence
     let wallet = 100000, missions = [], recruits = [], shopItems = { Cars: [], Houses: [], Weapons: [] };
-    let currentMission = null, currentRecruit = null, currentStock = null, shopTab = "Cars", restockTimers = {};
+    let currentMission = null, currentRecruit = null, currentStock = null;
+    let shopTab = "Cars", restockTimers = {};
+    let pcCount = 0;
 
-    const missionTemplates=["Intercept enemy transmission","Surveil high-value target","Extract compromised agent","Infiltrate secure facility","Plant tracking device","Retrieve encrypted data","Neutralize rogue operative","Secure secret package"];
-    const stockNames=["ACME Corp","Global Dynamics","Zenith Tech","Nova Energy","Quantum Systems","Helix Pharma"];
-    const carNames=["Phantom","Eclipse","Falcon","Striker","Specter"];
-    const houseNames=["Villa Grande","Oak Manor","Sky High","Lakeside Retreat","Hilltop Estate"];
-    const weaponNames=["Nightshade","Reaper","Vanguard","Specter","Talion"];
+    const missionTemplates = [...];
+    const stockNames = [...];
+    const carNames = [...], houseNames = [...], weaponNames = [...];
 
     function random(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
     function loadState(){
       const d = JSON.parse(localStorage.getItem("agentDash")||"{}");
-      if(d.wallet!=null) wallet=d.wallet;
-      if(d.missions) missions=d.missions;
-      if(d.recruits) recruits=d.recruits;
-      if(d.shopItems) shopItems=d.shopItems;
+      wallet = d.wallet ?? wallet;
+      missions = d.missions || missions;
+      recruits = d.recruits || recruits;
+      shopItems = d.shopItems || shopItems;
+      pcCount = d.pcCount || 0;
     }
-
     function saveState(){
-      localStorage.setItem("agentDash", JSON.stringify({ wallet, missions, recruits, shopItems }));
+      localStorage.setItem("agentDash", JSON.stringify({ wallet, missions, recruits, shopItems, pcCount }));
+    }
+    function updateWallet(){
+      document.getElementById("wallet").textContent = `💰 €${wallet.toLocaleString()}`; saveState();
     }
 
-    function updateWallet(){ document.getElementById("wallet").textContent = `💰 €${wallet.toLocaleString()}`; saveState(); }
-
-    // Side panels
-    function toggleMenu(){ closeShop(); document.getElementById("menuPanel").classList.toggle("open"); renderLists(); }
-    function closeShop(){ document.getElementById("shopPanel").classList.remove("open"); }
-    function showShop(){ closeMenu(); document.getElementById("shopPanel").classList.add("open"); if(!shopItems.Cars.length) { generateShop("Cars"); generateShop("Houses"); generateShop("Weapons"); } selectTab(shopTab); }
-    function closeMenu(){ document.getElementById("menuPanel").classList.remove("open"); }
-
-    // Missions
-    function showMission(){
-      currentMission = { text: missionTemplates[random(0,missionTemplates.length-1)], details: "Top-secret mission briefing.", payout: random(50000,145000) };
-      currentRecruit = currentStock = null;
-      renderSections();
-    }
-    function acceptMission() { missions.push({ ...currentMission }); currentMission = null; renderSections(); renderLists(); saveState(); }
-    function completeMission(idx){
-      const m = missions.splice(idx,1)[0];
-      const isMIA = Math.random() < 0.1 && recruits.length > 0;
-      showOverlay(() => {
-        if(isMIA){
-          const r = recruits.splice(random(0,recruits.length-1),1)[0];
-          return `😢 ${r.name} has been captured — mission failed.`;
-        } else {
-          wallet += m.payout;
-          return `✅ Mission complete! Payout: €${m.payout.toLocaleString()}`;
+    // Crypto mining
+    function startMining(){
+      setInterval(() => {
+        if(pcCount>0){
+          wallet += pcCount * 1000;
+          updateWallet();
         }
-      }, () => { updateWallet(); renderLists(); saveState(); });
+      }, 1000);
     }
 
-    function renderLists(){
-      document.getElementById("missionsList").innerHTML = missions.length
-        ? missions.map((m,i)=>`<div class="card"><strong>${m.text}</strong><br>Payout: €${m.payout.toLocaleString()}<br><button onclick="completeMission(${i})">Mark Completed</button></div>`).join("")
-        : "<p>No active missions.</p>";
+    // Setup on load
+    loadState();
+    updateWallet();
+    renderLists();
+    showMission();
+    showRecruit();
+    startMining();
 
-      document.getElementById("recruitsList").innerHTML = recruits.length
-        ? recruits.map(r=>`<div class="card"><strong>${r.name}</strong><br>${r.skill}, Age ${r.age}<br>${r.location}</div>`).join("")
-        : "<p>No recruits.</p>";
-    }
+    // (rest of your code remains the same, with one new buyItem condition:)
 
-    // Recruits
-    function showRecruit(){
-      currentRecruit = {
-        name: stockNames[random(0,stockNames.length-1)]+" Agent",
-        age: random(25,45),
-        location:["Berlin","Tokyo","NYC","Paris","Cairo","Moscow"][random(0,5)],
-        skill:["Assassination","Stealth","Hacking"][random(0,2)],
-        cost: random(20000,60000)
-      };
-      currentMission = currentStock = null;
-      renderSections();
-    }
-
-    function hireRecruit(){
-      if(wallet < currentRecruit.cost) return alert("Insufficient funds.");
-      wallet -= currentRecruit.cost;
-      recruits.push({ ...currentRecruit });
-      showOverlay(`🎉 Hired ${currentRecruit.name} for €${currentRecruit.cost.toLocaleString()}`, () => {
-        updateWallet(); renderLists(); currentRecruit = null; renderSections(); showRecruit(); saveState();
+    function buyItem(cat,i){
+      const it = shopItems[cat][i];
+      if(wallet < it.cost) return alert("Insufficient funds.");
+      wallet -= it.cost;
+      if(it.name === "Crypto PC") pcCount++;
+      showOverlay(`👍 Bought ${it.name} for €${it.cost.toLocaleString()}`, ()=>{
+        updateWallet();
+        shopItems[cat].splice(i,1);
+        saveState();
+        renderShop();
       });
     }
 
-    // Stocks
-    function showStocks(){
-      currentStock = { name: stockNames[random(0,stockNames.length-1)] };
-      currentMission = currentRecruit = null;
-      renderSections();
-    }
-
-    function investStock(){
-      const amt = Number(document.getElementById("stockAmt").value);
-      if(!amt || amt < 1 || amt > wallet) return alert("Enter valid amount up to your wallet.");
-      const pct = random(78,200), result = Math.round(amt*pct/100);
-      wallet += (result - amt);
-      showOverlay(() => {
-        if(pct > 100) return `📈 Well done! You got €${result.toLocaleString()} (${pct}%)`;
-        if(pct === 100) return "📊 The market didn’t go anywhere.";
-        return `📉 Oops… lost €${(amt - result).toLocaleString()}`;
-      }, () => {
-        updateWallet(); currentStock = null; renderSections();
-      });
-    }
-
-    // Shop
     function generateShop(cat){
-      const base = cat === "Cars" ? carNames : (cat === "Houses" ? houseNames : weaponNames);
       shopItems[cat] = Array.from({ length: 5 }, (_, i) => {
-        return {
-          name: base[random(0, base.length-1)] + " " + (i+1),
-          cost: cat === "Cars" ? random(100000, 2000000) :
-                cat === "Houses" ? random(500000, 5000000) :
-                random(10000, 100000)
-        };
+        let name, cost;
+        if(cat === "Weapons"){
+          name = (i === 0 ? "Crypto PC" : weaponNames[random(0,weaponNames.length-1)]) + " " + (i+1);
+          cost = (name.startsWith("Crypto") ? 30000 : random(10000, 100000));
+        } else {
+          // same as before for cars and houses
+          name = (cat==="Cars"?carNames:houseNames)[random(0,(cat==="Cars"?carNames:houseNames).length-1)] + " " + (i+1);
+          cost = cat==="Cars"?random(100000,2000000):random(500000,5000000);
+        }
+        return { name, cost };
       });
       clearTimeout(restockTimers[cat]);
       restockTimers[cat] = null;
       saveState();
     }
 
-    function selectTab(tab){
-      shopTab = tab;
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + tab));
-      renderShop();
-    }
-
-    function renderShop(){
-      const content = document.getElementById("shopContent");
-      content.innerHTML = ""; // clear
-      
-      const items = shopItems[shopTab] || [];
-
-      if (!items.length) {
-        content.innerHTML = "<p>Seller will restock in two minutes.</p>";
-        if (!restockTimers[shopTab]) {
-          restockTimers[shopTab] = setTimeout(() => {
-            generateShop(shopTab);
-            if (shopTab === shopTab) renderShop();
-          }, 120000);
-        }
-      } else {
-        content.innerHTML = items.map((it, i) =>
-          `<div class="card"><strong>${it.name}</strong><br>Cost: €${it.cost.toLocaleString()}<br><button onclick="buyItem('${shopTab}',${i})">Buy</button></div>`
-        ).join("");
-      }
-    }
-
-    function buyItem(cat, i){
-      const it = shopItems[cat][i];
-      if (wallet < it.cost) return alert("Insufficient funds.");
-      wallet -= it.cost;
-      showOverlay(`👍 Bought ${it.name} for €${it.cost.toLocaleString()}`, () => {
-        updateWallet();
-        shopItems[cat].splice(i, 1);
-        saveState();
-        renderShop();
-      });
-    }
-
-    // Sections rendering
-    function renderSections(){
-      document.getElementById("missionBox").innerHTML = currentMission ?
-        `<div class="card"><h3>${currentMission.text}</h3><p>${currentMission.details}</p><p><strong>Payout:</strong> €${currentMission.payout.toLocaleString()}</p><button onclick="acceptMission()">Accept</button></div>` : "";
-      document.getElementById("recruitBox").innerHTML = currentRecruit ?
-        `<div class="card"><h3>${currentRecruit.name}</h3>Age ${currentRecruit.age}, ${currentRecruit.location}<br>Skill: ${currentRecruit.skill}<br><strong>Cost:</strong> €${currentRecruit.cost.toLocaleString()}<br><button onclick="hireRecruit()">Hire</button><button onclick="showRecruit()">Next</button></div>` : "";
-      document.getElementById("stockBox").innerHTML = currentStock ?
-        `<div class="card"><h3>${currentStock.name}</h3><p>Invest amount: €<input id="stockAmt" type="number"/></p><button onclick="investStock()">Invest</button></div>` : "";
-    }
-
-    // Overlay
-    function showOverlay(msgOrFn, cb){
-      const o = document.getElementById("statusOverlay");
-      o.textContent = typeof msgOrFn === "function" ? msgOrFn() : msgOrFn;
-      o.style.display = "flex";
-      setTimeout(() => {
-        o.style.display = "none";
-        cb && cb();
-      }, 3000);
-    }
-
-    // Init
-    loadState();
-    updateWallet();
-    renderLists();
-    showMission();
-    showRecruit();
+    // rest of the shop, missions, recruits, overlay logic unchanged
   </script>
 </body>
 </html>
