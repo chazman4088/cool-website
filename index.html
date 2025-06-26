@@ -1,51 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Life Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-      padding: 40px;
+      margin: 0;
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(120deg, #f8f9fa, #e0e0e0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
     .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
     }
 
-    input, select, button {
+    h1, h2 {
+      margin: 0 0 20px;
+      color: #333;
+    }
+
+    input, select {
+      width: 80%;
       padding: 10px;
-      margin: 10px;
+      margin: 10px 0;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 24px;
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background: #007BFF;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0056b3;
     }
 
     #stats {
       margin-top: 20px;
-      font-weight: bold;
+      text-align: left;
+      line-height: 1.6;
     }
 
     #events {
       margin-top: 20px;
       font-style: italic;
+      color: #555;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container fade-in">
     <h1>Life Simulator</h1>
+
     <div id="character-creation">
       <input type="text" id="name" placeholder="Enter your name">
       <select id="gender">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
       </select>
+      <br>
       <button onclick="startGame()">Start Life</button>
     </div>
 
@@ -85,12 +133,12 @@
 
     function applyRandomEvent() {
       const events = [
-        { text: "You read a book. Intelligence +5", effect: () => character.intelligence += 5 },
-        { text: "You went to a party. Happiness +10", effect: () => character.happiness += 10 },
-        { text: "You got sick. Health -10", effect: () => character.health -= 10 },
-        { text: "You started working out. Looks +5", effect: () => character.looks += 5 },
-        { text: "You were in a car accident. Health -20", effect: () => character.health -= 20 },
-        { text: "You got a promotion. Happiness +15", effect: () => character.happiness += 15 },
+        { text: "You read a book. 📖 Intelligence +5", effect: () => character.intelligence += 5 },
+        { text: "You went to a party. 🎉 Happiness +10", effect: () => character.happiness += 10 },
+        { text: "You got sick. 🤒 Health -10", effect: () => character.health -= 10 },
+        { text: "You worked out. 💪 Looks +5", effect: () => character.looks += 5 },
+        { text: "You were in a car accident. 🚗 Health -20", effect: () => character.health -= 20 },
+        { text: "You got a promotion. 🧑‍💼 Happiness +15", effect: () => character.happiness += 15 },
         { text: "Nothing interesting happened this year.", effect: () => {} }
       ];
 
