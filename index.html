@@ -1,90 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Agency Login</title>
-  <style>
-    body {
-      background: #0d0d0d;
-      color: #00ffcc;
-      font-family: 'Courier New', Courier, monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .login-box {
-      background: rgba(0, 0, 0, 0.8);
-      border: 2px solid #00ffcc;
-      padding: 40px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 0 20px #00ffcc;
-    }
-    input {
-      background: #000;
-      border: 1px solid #00ffcc;
-      color: #00ffcc;
-      padding: 10px;
-      margin: 10px 0;
-      width: 100%;
-      font-size: 16px;
-    }
-    button {
-      background: #00ffcc;
-      color: #000;
-      padding: 10px 20px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #00ccb3;
-    }
-    .message {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Life Simulator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="login-box">
-    <h2>🔐 Agent Access Terminal</h2>
-    <input type="text" id="codename" placeholder="Codename">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="attemptLogin()">Access</button>
-    <div class="message" id="message"></div>
+  <div class="container">
+    <h1>Life Simulator</h1>
+    <div id="character-creation">
+      <input type="text" id="name" placeholder="Enter your name">
+      <select id="gender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <button onclick="startGame()">Start Life</button>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+      <h2 id="charInfo"></h2>
+      <div id="stats"></div>
+      <button onclick="nextYear()">Next Year</button>
+      <div id="events"></div>
+    </div>
   </div>
 
-  <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbztH816NJ1WbYJzWP4MezQAFIVQE4S3FGxjxVSVFT6YisLJ2yJz7LZTjGiVgYN8RFBeIQ/exec";
-
-    function attemptLogin() {
-      const codename = document.getElementById('codename').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const messageEl = document.getElementById('message');
-
-      if (codename === "CH" && password === "1234") {
-        messageEl.textContent = "Welcome sir";
-        messageEl.style.color = "#00ffcc";
-        logAttempt(codename, "SUCCESS");
-        setTimeout(() => window.location.href = "dashboard.html", 2000);
-      } else {
-        messageEl.textContent = "Agent not found";
-        messageEl.style.color = "red";
-        logAttempt(codename, "FAILURE");
-      }
-    }
-
-    function logAttempt(agent, result) {
-      const url = `${endpoint}?codename=${encodeURIComponent(agent)}&result=${encodeURIComponent(result)}`;
-      const script = document.createElement('script');
-      script.src = url;
-      document.body.appendChild(script);
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
