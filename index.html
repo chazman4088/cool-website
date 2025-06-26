@@ -27,12 +27,13 @@
       box-shadow: 0 15px 25px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 500px;
-      text-align: center;
+      position: relative;
     }
 
     h1, h2 {
       margin: 0 0 20px;
       color: #333;
+      text-align: center;
     }
 
     input, select {
@@ -61,10 +62,25 @@
       background: #0056b3;
     }
 
-    #stats {
+    #wallet {
+      background: #222;
+      color: #0f0;
+      padding: 10px 15px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+
+    #statsBox {
+      background-color: #e63946;
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
       margin-top: 20px;
-      text-align: left;
       line-height: 1.6;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     #events {
@@ -77,6 +93,22 @@
       animation: fadeIn 0.5s ease-in-out;
     }
 
+    #jobButton {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: #28a745;
+    }
+
+    #jobList {
+      margin-top: 15px;
+    }
+
+    select#jobSelector {
+      width: 100%;
+      margin-top: 10px;
+    }
+
     @keyframes fadeIn {
       from {opacity: 0;}
       to {opacity: 1;}
@@ -86,6 +118,8 @@
 <body>
   <div class="container fade-in">
     <h1>Life Simulator</h1>
+
+    <div id="wallet">Wallet: €0</div>
 
     <div id="character-creation">
       <input type="text" id="name" placeholder="Enter your name">
@@ -99,9 +133,22 @@
 
     <div id="game-screen" style="display: none;">
       <h2 id="charInfo"></h2>
-      <div id="stats"></div>
+
+      <div id="statsBox">
+        <div id="stats"></div>
+      </div>
+
       <button onclick="nextYear()">Next Year</button>
+
       <div id="events"></div>
+
+      <button id="jobButton" onclick="openJobMenu()">Jobs</button>
+      <div id="jobList" style="display: none;">
+        <label for="jobSelector">Select a job:</label>
+        <select id="jobSelector" onchange="selectJob()">
+          <option value="">-- Choose a job --</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -113,8 +160,18 @@
       health: 100,
       happiness: 100,
       intelligence: 100,
-      looks: 100
+      looks: 100,
+      money: 0,
+      job: null
     };
+
+    const jobs = [
+      { title: "Retail Worker", salary: 15000 },
+      { title: "Software Developer", salary: 60000 },
+      { title: "Doctor", salary: 90000 },
+      { title: "Artist", salary: 25000 },
+      { title: "CEO", salary: 150000 }
+    ];
 
     function startGame() {
       character.name = document.getElementById("name").value || "Anonymous";
@@ -122,11 +179,38 @@
 
       document.getElementById("character-creation").style.display = "none";
       document.getElementById("game-screen").style.display = "block";
+
+      // Populate job list
+      const jobSelector = document.getElementById("jobSelector");
+      jobs.forEach(job => {
+        const option = document.createElement("option");
+        option.value = job.title;
+        option.textContent = `${job.title} (€${job.salary.toLocaleString()}/yr)`;
+        jobSelector.appendChild(option);
+      });
+
+      updateUI();
+    }
+
+    function openJobMenu() {
+      document.getElementById("jobList").style.display = "block";
+    }
+
+    function selectJob() {
+      const selected = document.getElementById("jobSelector").value;
+      const job = jobs.find(j => j.title === selected);
+      character.job = job;
+      document.getElementById("jobList").style.display = "none";
       updateUI();
     }
 
     function nextYear() {
       character.age++;
+
+      if (character.job) {
+        character.money += character.job.salary;
+      }
+
       applyRandomEvent();
       updateUI();
     }
@@ -153,8 +237,10 @@
         Health: ${character.health}<br>
         Happiness: ${character.happiness}<br>
         Intelligence: ${character.intelligence}<br>
-        Looks: ${character.looks}
+        Looks: ${character.looks}<br>
+        Job: ${character.job ? character.job.title : "Unemployed"}
       `;
+      document.getElementById("wallet").innerText = `Wallet: €${character.money.toLocaleString()}`;
     }
   </script>
 </body>
